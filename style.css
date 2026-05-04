@@ -1,0 +1,610 @@
+/* ini kegunaan nya untuk mereset papan ke kondisi awal, jadi semua bidak kembali ke posisi semula dan giliran pemain kembali ke putih */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ini gunanya untuk memastikan bahwa elemen-elemen di dalam halaman tidak melebihi batas yang ditentukan dan tidak menyebabkan scroll pada halaman. Dengan mengatur overflow ke hidden, kita dapat menjaga tampilan tetap rapi dan terkontrol, terutama saat menggunakan layout flexbox untuk mengatur tata letak halaman. */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ini gunanya untuk memberikan gaya dasar pada seluruh halaman, seperti jenis font, warna latar belakang, dan warna teks. Dengan menggunakan font Arial, sans-serif, kita memastikan bahwa teks akan terlihat bersih dan mudah dibaca. Warna latar belakang #eef3f5 memberikan tampilan yang lembut dan modern, sementara warna teks #1f2a36 memberikan kontras yang cukup untuk memastikan keterbacaan yang baik. */
+body {
+  font-family: Arial, sans-serif;
+  background: #eef3f5;
+  color: #1f2a36;
+}
+
+/* layout utama */
+.halaman {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+}
+
+/* sidebar */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #172331;
+  padding-top: 16px;
+  flex-shrink: 0;
+}
+
+/* logo kecil : buat tampilan logo kecil di sidebar, dengan ukuran yang lebih kecil dan penempatan yang rapi di tengah sidebar. Logo ini terdiri dari beberapa elemen yang memiliki gaya khusus, seperti warna latar belakang, warna teks, dan bentuk tertentu untuk menciptakan tampilan yang menarik dan konsisten dengan tema desain keseluruhan halaman. */
+.logo-kecil {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 45px;
+}
+/* buat munculin migoyugo nya  */
+.logo-kecil span,
+.logo-besar span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #05aee0;
+  border: 1px solid #08708f;
+  color: white;
+  font-family:
+    Arial Black,
+    Arial,
+    sans-serif;
+  font-weight: bold;
+}
+
+.logo-kecil span {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+.logo-besar span {
+  width: 58px;
+  height: 56px;
+  font-size: 34px;
+}
+
+.logo-kecil span:nth-child(4),
+.logo-kecil span:nth-child(8),
+.logo-besar span:nth-child(4),
+.logo-besar span:nth-child(8) {
+  background: black;
+  color: red;
+  border-radius: 0;
+}
+
+.logo-kecil span:nth-child(5),
+.logo-kecil span:nth-child(6),
+.logo-kecil span:nth-child(7),
+.logo-besar span:nth-child(5),
+.logo-besar span:nth-child(6),
+.logo-besar span:nth-child(7) {
+  color: #111;
+}
+
+/* MENU SIDEBAR */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 18px;
+}
+
+.menu button {
+  background: transparent;
+  border: none;
+  color: #dce4eb;
+  text-align: left;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+/* hover buat tombol menu di sidebar, dengan perubahan warna latar belakang, pergeseran posisi, dan perubahan warna teks saat pengguna mengarahkan kursor ke tombol tersebut. Efek ini memberikan umpan balik visual yang menarik dan meningkatkan interaksi pengguna dengan elemen menu, membuatnya lebih responsif dan menyenangkan untuk digunakan. */
+.menu button:hover {
+  background: #2d4157;
+  transform: translateX(8px);
+  color: white;
+}
+
+/* KONTEN */
+.konten {
+  flex: 1;
+  height: 100vh;
+  padding: 20px 28px;
+  overflow: hidden;
+}
+
+.logo-besar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.area-game {
+  height: calc(100vh - 94px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* PAPAN GAME */
+.kotak-game {
+  width: min(700px, calc(100vh - 120px));
+  border: 3px solid #26384b;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #26384b;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.bar-pemain {
+  height: 40px;
+  background: #172433;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.info-pemain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bidak {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.putih {
+  background: white;
+  border: 3px solid #b4c0c8;
+}
+
+.hitam {
+  background: #142536;
+  border: 3px solid #26384b;
+}
+
+.waktu {
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.papan {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  background: #cfe6fb;
+}
+
+.kotak {
+  background: #cfe6fb;
+  border: 1px solid #a8bdcc;
+  transition: 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kotak:hover {
+  background: #a9c9e3;
+}
+
+.migo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+.migo-putih {
+  background: white;
+  border: 3px solid #26384b;
+}
+
+.migo-hitam {
+  background: #26384b;
+  border: 3px solid #111;
+}
+
+/* angka dan huruf tidak ikut merusak grid */
+.angka,
+.huruf {
+  position: absolute;
+  color: #6c7d89;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* posisi angka kiri */
+.angka {
+  left: 10px;
+}
+
+.angka-8 {
+  top: 10px;
+}
+.angka-7 {
+  top: 14.5%;
+}
+.angka-6 {
+  top: 27%;
+}
+.angka-5 {
+  top: 39.5%;
+}
+.angka-4 {
+  top: 52%;
+}
+.angka-3 {
+  top: 64.5%;
+}
+.angka-2 {
+  top: 77%;
+}
+.angka-1 {
+  top: 89.5%;
+}
+
+/* posisi huruf bawah */
+.huruf {
+  bottom: 10px;
+}
+
+.huruf-a {
+  left: 10%;
+}
+.huruf-b {
+  left: 22%;
+}
+.huruf-c {
+  left: 34.5%;
+}
+.huruf-d {
+  left: 47%;
+}
+.huruf-e {
+  left: 59.5%;
+}
+.huruf-f {
+  left: 72%;
+}
+.huruf-g {
+  left: 84.5%;
+}
+.huruf-h {
+  left: 98%;
+}
+
+/* PANEL KANAN */
+.panel {
+  width: 310px;
+  height: calc(100vh - 120px);
+  flex-shrink: 0;
+}
+
+.tombol-atas {
+  display: flex;
+  gap: 10px;
+}
+
+.tombol-atas button {
+  width: 50%;
+  padding: 16px 0;
+  border: none;
+  border-radius: 5px 5px 0 0;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.start {
+  background: #27a844;
+}
+
+.reset {
+  background: #26384b;
+}
+
+.isi-panel {
+  height: calc(100% - 52px);
+  background: white;
+  border: 3px solid #26384b;
+  border-top: none;
+  padding: 22px 14px;
+}
+
+.form-baris {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 15px;
+}
+
+select {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid #d8dde2;
+  border-radius: 4px;
+  background: white;
+  font-size: 15px;
+}
+
+/* TIMER */
+.timer-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#cekTimer {
+  display: none;
+}
+
+.toggle {
+  width: 44px;
+  height: 23px;
+  background: #28e761;
+  border-radius: 20px;
+  padding: 3px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.toggle span {
+  display: block;
+  width: 17px;
+  height: 17px;
+  background: white;
+  border-radius: 50%;
+  transform: translateX(21px);
+  transition: 0.25s;
+}
+
+#cekTimer:not(:checked) + .toggle {
+  background: #ff4b4b;
+}
+
+#cekTimer:not(:checked) + .toggle span {
+  transform: translateX(0);
+}
+
+.timer-setting {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.timer-setting label {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.import {
+  width: 100%;
+  padding: 14px 8px;
+  background: #0fa7bb;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* MODAL */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.overlay.aktif {
+  display: flex;
+}
+
+.modal {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+/* MODAL TUTORIAL */
+.modal-tutorial {
+  width: 540px;
+  padding: 22px 28px 0;
+  text-align: center;
+}
+
+.modal-tutorial h2 {
+  color: #28394d;
+  margin-bottom: 10px;
+}
+
+.modal-tutorial p {
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
+.merah {
+  color: red;
+}
+
+.papan-kecil {
+  width: 290px;
+  height: 290px;
+  margin: 0 auto 22px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  background: #d3ecff;
+  border: 4px solid #26384b;
+  border-radius: 5px;
+}
+
+.papan-kecil div {
+  border: 1px solid #aec3d2;
+  position: relative;
+}
+
+.piece::after {
+  content: "";
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.putih-piece::after {
+  background: white;
+  border: 3px solid #26384b;
+}
+
+.hitam-piece::after {
+  background: #26384b;
+  border: 3px solid #111;
+}
+
+/* MODAL RULES */
+.modal-rules {
+  width: 760px;
+  height: 690px;
+  padding: 26px 28px 0;
+}
+
+.close-bulat {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #777;
+  color: white;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.modal-rules h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.isi-rules {
+  height: 520px;
+  overflow-y: auto;
+  padding-right: 18px;
+}
+
+.isi-rules h3 {
+  color: red;
+  margin: 18px 0 8px;
+  font-size: 20px;
+}
+
+.isi-rules ul {
+  margin-left: 22px;
+  line-height: 1.35;
+  font-size: 16px;
+}
+
+/* TOMBOL MODAL */
+.modal-footer {
+  border-top: 1px solid #e9edf0;
+  padding: 22px 0;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.modal-footer button {
+  background: #26384b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ALERT COPY */
+.alert-copy {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  width: 310px;
+  background: white;
+  border-left: 6px solid #27a844;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  z-index: 999;
+
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: 0.3s ease;
+}
+
+.alert-copy.muncul {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.alert-icon {
+  width: 38px;
+  height: 38px;
+  background: #e8f8ee;
+  color: #27a844;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.alert-text strong {
+  color: #1f2a36;
+  font-size: 15px;
+}
+
+.alert-text span {
+  color: #607080;
+  font-size: 13px;
+}

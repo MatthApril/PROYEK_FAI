@@ -1,490 +1,240 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Migoyugo - Strategic Board Game</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-
-        <div class="halaman">
-
-            <!-- SIDEBAR -->
-            <aside class="sidebar">
-
-                <div class="logo-kecil">
-                    <span>M</span>
-                    <span>I</span>
-                    <span>G</span>
-                    <span>O</span>
-                    <span>Y</span>
-                    <span>U</span>
-                    <span>G</span>
-                    <span>O</span>
-                </div>
-
-                <div class="menu">
-                    <button onclick="bukaTutorial()">🎓 Tutorial</button>
-                    <button onclick="bukaRules()">📖 Rules</button>
-                </div>
-
-            </aside>
-
-            <!-- KONTEN UTAMA -->
-            <main class="konten">
-
-                <!-- LOGO BESAR -->
-                <div class="logo-besar">
-                    <span>M</span>
-                    <span>I</span>
-                    <span>G</span>
-                    <span>O</span>
-                    <span>Y</span>
-                    <span>U</span>
-                    <span>G</span>
-                    <span>O</span>
-                </div>
-
-                <div class="area-game">
-
-                    <!-- PAPAN GAME -->
-                    <section class="kotak-game">
-
-                        <div class="bar-pemain">
-                            <div class="info-pemain">
-                                <div class="bidak putih"></div>
-                                <span>White</span>
-                                <span>Yugos: 0</span>
-                            </div>
-
-                            <!-- atur nya disini kalau mau hitung mundur -->
-                            <div class="waktu">10:00</div>
-                        </div>
-
-                        <div class="papan">
-
-                            <!-- kotak-kotak papan 8x8 -->
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-                            <div class="kotak"></div>
-
-                            <!-- ANGKA OVERLAY -->
-                            <span class="angka angka-8">8</span>
-                            <span class="angka angka-7">7</span>
-                            <span class="angka angka-6">6</span>
-                            <span class="angka angka-5">5</span>
-                            <span class="angka angka-4">4</span>
-                            <span class="angka angka-3">3</span>
-                            <span class="angka angka-2">2</span>
-                            <span class="angka angka-1">1</span>
-
-                            <!-- HURUF OVERLAY -->
-                            <span class="huruf huruf-a">a</span>
-                            <span class="huruf huruf-b">b</span>
-                            <span class="huruf huruf-c">c</span>
-                            <span class="huruf huruf-d">d</span>
-                            <span class="huruf huruf-e">e</span>
-                            <span class="huruf huruf-f">f</span>
-                            <span class="huruf huruf-g">g</span>
-                            <span class="huruf huruf-h">h</span>
-
-                        </div>
-
-                        <div class="bar-pemain">
-                            <div class="info-pemain">
-                                <div class="bidak hitam"></div>
-                                <span>Black</span>
-                                <span>Yugos: 0</span>
-                            </div>
-
-                            <!-- aturnya disini kalau mau hitung mundur -->
-                            <div class="waktu">10:00</div>
-                        </div>
-
-                    </section>
-
-                    <!-- PANEL KANAN -->
-                    <aside class="panel">
-
-                        <div class="tombol-atas">
-                            <!-- nanti buat fungsi start game -->
-                            <button class="start"
-                                onclick="startGame()">Start</button>
-
-                            <!-- nanti buat fungsi reset game -->
-                            <button class="reset"
-                                onclick="resetPapan()">Reset</button>
-                        </div>
-
-                        <div class="isi-panel">
-
-                            <div class="form-baris">
-                                <label for="pilihanMusuh">Opponent:</label>
-
-                                <select id="pilihanMusuh">
-                                    <option>Local Play</option>
-                                    <option>AI - Beginner</option>
-                                    <option>AI - Novice</option>
-                                    <option>AI - Intermediate</option>
-                                    <option>AI - Advanced</option>
-                                    <option>AI - Expert</option>
-                                    <option>AI - Master</option>
-                                </select>
-                            </div>
-
-                            <div class="form-baris">
-                                <label>Game Timer:</label>
-
-                                <div class="timer-control">
-                                    <span>Off</span>
-
-                                    <input type="checkbox" id="cekTimer"
-                                        checked>
-
-                                    <label for="cekTimer" class="toggle">
-                                        <span></span>
-                                    </label>
-
-                                    <span>On</span>
-                                </div>
-                            </div>
-
-                            <div class="timer-setting" id="timerSetting">
-
-                                <div>
-                                    <label for="menit">Minutes:</label>
-
-                                    <select id="menit">
-                                        <option value="10">10</option>
-                                        <option value="15">15</option>
-                                        <option value="20">20</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label for="increment">Increment:</label>
-
-                                    <select id="increment">
-                                        <option value="5">5 sec</option>
-                                        <option value="2">2 sec</option>
-                                        <option value="1">1 sec</option>
-                                        <option value="0">0 sec</option>
-                                    </select>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </aside>
-
-                </div>
-
-            </main>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Migoyugo - Strategic Board Game</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="halaman d-flex vw-100 vh-100">
+      <!-- KONTEN UTAMA -->
+      <main class="konten flex-grow-1 vh-100 p-3 overflow-hidden">
+        <!-- LOGO BESAR -->
+        <div class="logo-besar d-flex justify-content-center mb-3">
+          <img src="assets/image.png" alt="Migoyugo" />
         </div>
 
-        <!-- TUTORIAL -->
-        <div class="overlay" id="modalTutorial">
+        <div
+          class="area-game d-flex justify-content-center align-items-start gap-3"
+        >
+          <!-- PAPAN GAME -->
+          <section class="kotak-game flex-shrink-0 rounded-1 overflow-hidden">
+            <div
+              class="bar-pemain d-flex align-items-center justify-content-between px-3 text-white"
+            >
+              <div
+                id="info-putih"
+                class="d-flex align-items-center gap-2 rounded px-1"
+              >
+                <div class="bidak putih rounded-circle"></div>
+                <span>White</span>
+                <span>Yugos: 0</span>
+              </div>
 
-            <div class="modal modal-tutorial">
-
-                <h2>Basic Gameplay</h2>
-
-                <p>
-                    <b class="merah">Migoyugo</b> is played on an 8x8 board.<br>
-                    Players alternate turns,<br>
-                    white moves first, then black,<br>
-                    placing pieces called <b class="merah">Migos</b> on empty
-                    squares.
-                </p>
-
-                <div class="papan-kecil">
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div class="piece hitam-piece"></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div class="piece putih-piece"></div>
-                    <div class="piece hitam-piece"></div>
-                    <div class="piece putih-piece"></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div class="piece putih-piece"></div>
-                    <div class="piece putih-piece"></div>
-                    <div></div>
-                    <div class="piece hitam-piece"></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div class="piece hitam-piece"></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button>Next</button>
-                    <button onclick="tutupModal()">Close</button>
-                </div>
-
+              <!-- atur nya disini kalau mau hitung mundur -->
+              <div class="waktu-putih fw-bold">10:00</div>
             </div>
 
-        </div>
+            <div class="papan position-relative" id="papanGame">
+              <!-- kotak-kotak papan 8x8 -->
 
-        <!-- RULES -->
-        <div class="overlay" id="modalRules">
+              <!-- ANGKA OVERLAY -->
+              <span class="angka angka-8">8</span>
+              <span class="angka angka-7">7</span>
+              <span class="angka angka-6">6</span>
+              <span class="angka angka-5">5</span>
+              <span class="angka angka-4">4</span>
+              <span class="angka angka-3">3</span>
+              <span class="angka angka-2">2</span>
+              <span class="angka angka-1">1</span>
 
-            <div class="modal modal-rules">
-
-                <button class="close-bulat" onclick="tutupModal()">×</button>
-
-                <h2><span class="merah">Migoyugo</span> Game Rules</h2>
-
-                <div class="isi-rules">
-
-                    <h3>The Game</h3>
-                    <ul>
-                        <li><b>Migoyugo</b> is a board game for two players</li>
-                        <li>
-                            It is an abstract strategy game that features
-                            complete information
-                            (no reliance on luck or chance)
-                        </li>
-                        <li>
-                            Win by creating an Igo (an unbroken line of 4 Yugos)
-                            or have a
-                            higher Yugo count with a Wego
-                        </li>
-                    </ul>
-
-                    <h3>The Board</h3>
-                    <ul>
-                        <li>
-                            The Migoyugo board is an 8 X 8 grid of 64 squares
-                            (typically all the same color) with rows numbered
-                            1-8
-                            from bottom to top and columns designated A-H from
-                            left to right.
-                        </li>
-                    </ul>
-
-                    <h3>The Migo</h3>
-                    <ul>
-                        <li>
-                            White always moves first by placing a piece, called
-                            a Migo,
-                            on any square on the board.
-                        </li>
-                        <li>
-                            Players take alternating turns placing Migos on any
-                            open square*
-                            (see No Long Lines).
-                        </li>
-                    </ul>
-
-                    <h3>The Yugo</h3>
-                    <ul>
-                        <li>
-                            When you form one unbroken line of exactly 4 pieces
-                            of your own
-                            color, or multiple intersecting lines (horizontal,
-                            vertical or
-                            diagonal), the last piece placed becomes a Yugo,
-                            represented by
-                            a dot in the center.
-                        </li>
-                        <li>
-                            When a Yugo is created, all Migos in the line(s) are
-                            removed,
-                            leaving behind only the Yugo created and any other
-                            Yugos in the line(s).
-                        </li>
-                        <li>Yugos can never be moved or removed from the
-                            board.</li>
-                    </ul>
-
-                    <h3>No Long Lines</h3>
-                    <ul>
-                        <li>
-                            At no time may either player create an unbroken line
-                            of more than
-                            4 in a row of any combination of Migos and/or Yugos
-                            of their own
-                            color (multiple intersecting lines are permitted).
-                        </li>
-                    </ul>
-
-                    <h3>Winning</h3>
-                    <ul>
-                        <li>There are two distinct end game conditions – an Igo
-                            and a Wego.</li>
-                        <li>
-                            Form an unbroken line (horizontal, vertical or
-                            diagonal) of exactly
-                            4 Yugos of your own color and you win instantly with
-                            an Igo.
-                        </li>
-                        <li>
-                            If on your turn, you are unable to make a legal
-                            move, or if all 64
-                            squares are filled, the game ends with a Wego, and
-                            the player with
-                            the most Yugos is declared the winner. If both
-                            players have the same
-                            number of Yugos, the game is drawn.
-                        </li>
-                        <li>If a player resigns, the opponent is declared the
-                            winner.</li>
-                        <li>
-                            If players compete using a clock, a player is
-                            declared the winner
-                            if the opponent's clock expires.
-                        </li>
-                    </ul>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button onclick="copyRules()">📋 Copy Rules</button>
-                    <button onclick="tutupModal()">Close</button>
-                </div>
-
+              <!-- HURUF OVERLAY -->
+              <span class="huruf huruf-a">a</span>
+              <span class="huruf huruf-b">b</span>
+              <span class="huruf huruf-c">c</span>
+              <span class="huruf huruf-d">d</span>
+              <span class="huruf huruf-e">e</span>
+              <span class="huruf huruf-f">f</span>
+              <span class="huruf huruf-g">g</span>
+              <span class="huruf huruf-h">h</span>
             </div>
 
-        </div>
+            <div
+              class="bar-pemain d-flex align-items-center justify-content-between px-3 text-white"
+            >
+              <div
+                id="info-hitam"
+                class="d-flex align-items-center gap-2 rounded px-1"
+              >
+                <div class="bidak hitam rounded-circle"></div>
+                <span>Black</span>
+                <span>Yugos: 0</span>
+              </div>
 
-        <div class="alert-copy" id="alertCopy">
-            <div class="alert-icon">✅</div>
-
-            <div class="alert-text">
-                <strong>Berhasil disalin!</strong>
-                <span>Rules sudah masuk ke clipboard.</span>
+              <!-- aturnya disini kalau mau hitung mundur -->
+              <div class="waktu-hitam fw-bold">10:00</div>
             </div>
+          </section>
+
+          <!-- PANEL KANAN -->
+          <aside class="panel flex-shrink-0">
+            <div class="tombol-atas d-flex gap-2">
+              <!-- nanti buat fungsi start game -->
+              <button
+                id="start" 
+                class="btn btn-success w-50 py-3 fw-bold fs-6 rounded-top rounded-bottom-0"
+                onclick="startGame()"
+              >
+                Start
+              </button>
+
+              <!-- nanti buat fungsi reset game -->
+              <button
+                class="btn btn-dark w-50 py-3 fw-bold fs-6 rounded-top rounded-bottom-0"
+                onclick="resetPapan()"
+              >
+                Reset
+              </button>
+            </div>
+
+            <div class="isi-panel bg-white border border-top-0 p-3">
+              <div class="d-block" id="config-panel">
+                <div class="form-baris mb-3">
+                  <label for="pilihanMusuh">Opponent:</label>
+
+                  <select id="pilihanMusuh" class="form-select">
+                    <option>Local Play</option>
+                    <option>AI - Beginner</option>
+                    <option>AI - Novice</option>
+                    <option>AI - Intermediate</option>
+                    <option>AI - Advanced</option>
+                    <option>AI - Expert</option>
+                    <option>AI - Master</option>
+                  </select>
+                </div>
+
+                <div class="form-baris mb-3">
+                  <label>Game Timer:</label>
+
+                  <div class="timer-control d-flex align-items-center gap-2">
+                    <span>Off</span>
+
+                    <input type="checkbox" id="cekTimer" checked />
+
+                    <label for="cekTimer" class="toggle">
+                      <span></span>
+                    </label>
+
+                    <span>On</span>
+                  </div>
+                </div>
+
+                <div class="timer-setting" id="timerSetting">
+                  <div>
+                    <label for="menit" class="form-label d-block mb-2"
+                      >Minutes:</label
+                    >
+
+                    <select id="menit" class="form-select">
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="increment" class="form-label d-block mb-2"
+                      >Increment:</label
+                    >
+
+                    <select id="increment" class="form-select">
+                      <option value="5">5 sec</option>
+                      <option value="2">2 sec</option>
+                      <option value="1">1 sec</option>
+                      <option value="0">0 sec</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="d-none" id="history-panel">
+                <div class="header-history d-flex justify-content-between">
+                  <span class="fw-bold mb-2">Move History</span>
+                </div>
+                <div id="history-list" class="history-list">
+                  <textarea
+                    class="w-100 border border-secondary-subtle rounded"
+                    id="moveHistory"
+                    readonly
+                    rows="15"
+                    style="
+                      resize: none;
+                      outline: none;
+                      background-color: #fcfcfc;
+                    "
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
+      </main>
+    </div>
 
-        <script src="script.js"></script>
+    <div class="alert-container">
+      <div
+        class="alert-copy position-fixed shadow rounded-3 d-flex align-items-center gap-2 p-3"
+        id="alertCopy"
+      >
+        <div
+          class="alert-icon rounded-circle d-flex align-items-center justify-content-center"
+        ></div>
+        <div class="alert-text d-flex flex-column gap-1">
+          <strong id="alertJudul">Judul Alert</strong>
+          <span id="alertPesan">Pesan Alert</span>
+        </div>
+      </div>
+    </div>
 
-    </body>
+    <script src="js/script.js"></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+
+    <div class="modal fade" id="resignModal" tabindex="-1" aria-labelledby="resignModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4 border-0 shadow">
+      
+      <div class="modal-body">
+        <h3 class="fw-bold mb-4" id="resignModalLabel">
+          ⚠️ Confirm Resignation
+        </h3>
+        
+        <p class="fs-5 mb-2">Are you sure you want to resign this game?</p>
+        <p class="fs-5 mb-4">Your opponent will be declared the winner.</p>
+        
+        <div class="d-flex justify-content-center gap-3">
+          <button type="button" class="btn btn-danger px-4 py-2 fw-bold d-flex align-items-center gap-2" id="btnConfirmResign">
+            🏳️ Yes, Resign
+          </button>
+          
+          <button type="button" class="btn btn-success px-4 py-2 fw-bold d-flex align-items-center gap-2" data-bs-dismiss="modal">
+            ⚔️ Continue Playing
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+  </body>
 </html>

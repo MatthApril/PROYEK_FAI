@@ -88,7 +88,7 @@
             <div class="tombol-atas d-flex gap-2">
               <!-- nanti buat fungsi start game -->
               <button
-                id="start" 
+                id="startGame"
                 class="btn btn-success w-50 py-3 fw-bold fs-6 rounded-top rounded-bottom-0"
                 onclick="startGame()"
               >
@@ -167,9 +167,9 @@
                 <div class="header-history d-flex justify-content-between">
                   <span class="fw-bold mb-2">Move History</span>
                 </div>
-                <div id="history-list" class="history-list">
+                <div id="history-list" class="history-list mb-2">
                   <textarea
-                    class="w-100 border border-secondary-subtle rounded"
+                    class="w-100 border border-secondary-subtle rounded p-2"
                     id="moveHistory"
                     readonly
                     rows="15"
@@ -179,6 +179,15 @@
                       background-color: #fcfcfc;
                     "
                   ></textarea>
+                </div>
+                <div class="d-flex justify-content-center gap-4">
+                  <button type="button" class="btn btn-primary" id="btnReview">
+                    Review
+                  </button>
+
+                  <button type="button" class="btn btn-primary" id="btnUndo">
+                    Undo
+                  </button>
                 </div>
               </div>
             </div>
@@ -210,31 +219,79 @@
       crossorigin="anonymous"
     ></script>
 
-    <div class="modal fade" id="resignModal" tabindex="-1" aria-labelledby="resignModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center p-4 border-0 shadow">
-      
-      <div class="modal-body">
-        <h3 class="fw-bold mb-4" id="resignModalLabel">
-          ⚠️ Confirm Resignation
-        </h3>
-        
-        <p class="fs-5 mb-2">Are you sure you want to resign this game?</p>
-        <p class="fs-5 mb-4">Your opponent will be declared the winner.</p>
-        
-        <div class="d-flex justify-content-center gap-3">
-          <button type="button" class="btn btn-danger px-4 py-2 fw-bold d-flex align-items-center gap-2" id="btnConfirmResign">
-            🏳️ Yes, Resign
-          </button>
-          
-          <button type="button" class="btn btn-success px-4 py-2 fw-bold d-flex align-items-center gap-2" data-bs-dismiss="modal">
-            ⚔️ Continue Playing
-          </button>
+    <div
+      class="modal fade"
+      id="resignModal"
+      tabindex="-1"
+      aria-labelledby="resignModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-3 border-0">
+          <div class="modal-body">
+            <h2 class="fw-bold mb-4" id="resignModalLabel">
+              ⚠️ Confirm Resignation
+            </h2>
+
+            <p class="fs-5 mb-4">Are you sure you want to resign this game?</p>
+            <p class="fs-5 mb-4">Your opponent will be declared the winner.</p>
+
+            <div class="d-flex justify-content-center gap-4">
+              <button
+                type="button"
+                class="btn btn-danger fs-5 fw-bold"
+                id="btnConfirmResign"
+              >
+                🏳️ Yes, Resign
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-success fs-5 fw-bold"
+                data-bs-dismiss="modal"
+              >
+                ⚔️ Continue Playing
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
     </div>
-  </div>
-</div>
+
+    <div
+      class="modal fade"
+      id="gameOverModal"
+      tabindex="-1"
+      aria-labelledby="gameOverModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-3 border-0">
+          <div class="modal-body">
+            <h2 class="fw-bold" id="gameOverModalLabel">Game Over</h2>
+
+            <p class="fs-5 mb-4">White/Black wins with an Igo!</p>
+
+            <div class="d-flex justify-content-center gap-4">
+              <button
+                type="button"
+                class="btn btn-success fs-5 fw-bold"
+                id="btnReviewGame"
+              >
+                📋 Review Game
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-dark fs-5 fw-bold"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

@@ -73,25 +73,90 @@ body {
   justify-content: center;
 }
 
+.kotak.last-move {
+  background-color: #79e3b7 !important; /* Warna hijau mint */
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.08); /* Inner shadow halus */
+  transition: background-color 0.25s ease;
+}
+
 .kotak:hover {
   background: #a9c9e3;
 }
 
+/* Efek kotak kuning tebal saat berhasil membentuk Igo (4 Yugo sejajar) */
+.kotak.igo-winner {
+  outline: 4px solid yellow !important; /* Warna kuning solid tebal */
+  outline-offset: -4px; /* Memaksa outline masuk ke dalam border kotak */
+  z-index: 10; /* Memastikan border kuning berada di atas petak lainnya */
+}
+
 /* ===== BIDAK MIGO ===== */
 .migo {
-  width: 34px;
-  height: 34px;
+  width: 76%; /* Menggunakan % agar ukurannya responsif mengikuti ukuran kotak papan */
+  height: 76%; /* Sisa space memberikan ruang untuk efek bayangan di bawahnya */
   border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+
+  /* EFEK BAYANGAN: Membuat bidak terlihat nyata dan timbul dari papan */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.migo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.35);
 }
 
 .migo-putih {
-  background: white;
-  border: 3px solid #26384b;
+  background-color: #f0f0f0;
+  border: 3px solid #b0b0b0; /* Border abu-abu tebal sesuai gambar */
+
+  /* GRADASI RADIAL: Menentukan titik datang cahaya dari kiri-atas (30% 30%) */
+  background-image: radial-gradient(
+    circle at 30% 30%,
+    #ffffff 0%,
+    #f0f0f0 55%,
+    #d1d1d1 100%
+  );
 }
 
 .migo-hitam {
-  background: #26384b;
-  border: 3px solid #111;
+  background-color: #1a1a1a;
+  border: 3px solid #333333; /* Border gelap yang halus melingkari bidak */
+
+  /* GRADASI RADIAL: Membuat highlight putih tipis di area hitam agar terkesan mengkilap */
+  background-image: radial-gradient(
+    circle at 30% 30%,
+    #555555 0%,
+    #1a1a1a 65%,
+    #000000 100%
+  );
+}
+
+/* Efek Dot untuk status Yugo di tengah bidak */
+.yugo {
+  position: absolute;
+  width: 26%;
+  height: 26%;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+  top: 50%;
+  left: 50%;
+  transform: translate(
+    -50%,
+    -50%
+  ); /* Menjaga koordinat mati di tengah lingkaran */
+}
+
+.yugo-putih {
+  background-color: red; /* Dot merah di tengah bidak putih */
+}
+
+.yugo-hitam {
+  background-color: red; /* Dot merah di tengah bidak hitam */
 }
 
 /* ===== ANGKA & HURUF OVERLAY ===== */

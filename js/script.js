@@ -506,6 +506,7 @@ function yugo(row, col, color) {
   let yugo = false;
   let migos = [];
   let longLine = false;
+  let jumlahMigoSejajar = 0;
 
   // === TAHAP 1: CEK PEMBENTUKAN YUGO DARI MIGO BIASA ===
   papan.forEach((p) => {
@@ -539,6 +540,7 @@ function yugo(row, col, color) {
     // ATURAN GAME: Jika terbentuk minimal 4 bidak searah (sesuaikan angka 4 ini dengan mekanik aslinya)
     if (hitungBidak === 4) {
       yugo = true;
+      jumlahMigoSejajar++
 
       migos = migos.concat(koordinatMigo);
     } else if (hitungBidak > 4) {
@@ -558,13 +560,13 @@ function yugo(row, col, color) {
   }
 
   if (yugo) {
-    const yugoScore = 1;
+    const yugoScore = jumlahMigoSejajar;
 
     // 1. Ubah bidak terakhir yang ditekan menjadi Yugo
     gameState.board[row][col].isYugo = true;
-    gameState.board[row][col].jumlahArahYugo = yugoScore;
+    gameState.board[row][col].jumlahArahYugo = jumlahMigoSejajar;
     gameState.board[row][col].migosTerhapus = migos; // KUNCI UTAMA: Simpan daftar koordinat Migo yang meledak!
-    gameState.scores[color] += yugoScore; // Tambahkan skor sesuai jumlah Yugo
+    gameState.scores[color] += 1; // Tambahkan skor sesuai jumlah Yugo
 
     // 2. MEKANIK BARU: Hapus semua Migo yang sejajar dengannya dari virtual board
     migos.forEach((migo) => {

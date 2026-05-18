@@ -90,6 +90,11 @@ body {
   z-index: 10; /* Memastikan border kuning berada di atas petak lainnya */
 }
 
+.kotak.illegal-move {
+  background-color: red !important;
+  transition: background-color 0.2s ease;
+}
+
 /* ===== BIDAK MIGO ===== */
 .migo {
   width: 76%; /* Menggunakan % agar ukurannya responsif mengikuti ukuran kotak papan */

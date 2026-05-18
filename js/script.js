@@ -26,6 +26,7 @@ let gameState = {
   gameStatus: "waiting", // 'waiting' | 'active' | 'finished'
   lastMove: null,
   igoWinningKotak: [], // Menampung koordinat [ {r, c}, {r, c}, ... ] untuk kotak kuning
+  historyStack: [], // KUNCI BARU: Menyimpan tumpukan memori setiap langkah untuk multi-undo
 };
 
 // State untuk Timer
@@ -145,26 +146,57 @@ function handleKlikKotak(row, col) {
     return;
   }
 
-  // TODO KEDEPANNYA: Taruh validasi aturan "No Long Lines" di sini sebelum bidak ditaruh!
-
   // 2. UPDATE VIRTUAL BOARD
   gameState.board[row][col] = {
     color: gameState.currentPlayer,
     isYugo: false, // Default taruh pertama kali selalu Migo biasa
+    jumlahArahYugo: 0,
+    migosTerhapus: [],
   };
 
-  // JALANKAN LOGIKA EVALUASI YUGO (Sekarang menyimpan angka/boolean)
-  const jumlahYugo = yugo(row, col, gameState.currentPlayer);
+  // 3. JALANKAN LOGIKA EVALUASI YUGO (Sekarang menyimpan angka/boolean)
+  const totalYugoLangkahIni = yugo(row, col, gameState.currentPlayer);
+  // Jika langkah tersebut murni Long Line (>4) tanpa menghasilkan Yugo sah di arah lain sama sekali
+  if (totalYugoLangkahIni === -1) {
+    // Batalkan penempatan bidak di virtual board
+    gameState.board[row][col] = null;
 
-  // AKSI HIGHLIGHT: Simpan posisi kotak terbaru ke dalam state lastMove
+    // Beri efek flash merah pada petak HTML
+    const kotakIllegal = papanGame.querySelector(
+      `[data-row="${row}"][data-col="${col}"]`,
+    );
+    if (kotakIllegal) {
+      kotakIllegal.classList.add("illegal-move");
+      setTimeout(() => {
+        kotakIllegal.classList.remove("illegal-move");
+      }, 1000);
+    }
+    return; // STOP! Langkah dibatalkan total, turn tidak berganti
+  }
+
+  // 4. AKSI HIGHLIGHT: Simpan posisi kotak terbaru ke dalam state lastMove
   gameState.lastMove = { row: row, col: col };
 
-  // 3. CATAT MOVE HISTORY
+  // 5. CATAT MOVE HISTORY
   catatRiwayatLangkah(row, col, gameState.currentPlayer);
 
-  // TODO KEDEPANNYA: Taruh fungsi cek formasi 4 Migo -> Transformasi ke Yugo di sini!
+  // === AMBIL DATA CELL YANG SUDAH MATANG SETELAH EVALUASI YUGO ===
+  const cellTerupdate = gameState.board[row][col];
 
-  // 4. PERALIHAN TURN & TIMER INCREMENT
+  // Simpan data mekanik langkah ini ke dalam Stack sebelum turn berganti
+  gameState.historyStack.push({
+    row: row,
+    col: col,
+    player: gameState.currentPlayer,
+    isYugo: cellTerupdate ? cellTerupdate.isYugo : false,
+    jumlahArahYugo: cellTerupdate ? cellTerupdate.jumlahArahYugo || 0 : 0,
+    migosTerhapus:
+      cellTerupdate && cellTerupdate.migosTerhapus
+        ? [...cellTerupdate.migosTerhapus]
+        : [],
+  });
+
+  // 6. PERALIHAN TURN & TIMER INCREMENT
   if (gameState.currentPlayer === "white") {
     if (cekTimer.checked) waktuDetikPutih += nilaiIncrement;
     gameState.currentPlayer = "black";
@@ -187,11 +219,12 @@ function catatRiwayatLangkah(row, col, player) {
   const namaKolom = indeksKeHuruf[col];
   const namaBaris = 8 - row; // Membalik indeks array (0-7) menjadi baris papan (8-1)
   // Ambil data cell untuk mengecek jumlah Yugo
-  const statusYugo = gameState.board[row][col].isYugo;
+  const cellData = gameState.board[row][col];
+  const statusYugo = cellData ? cellData.isYugo : false;
   let tandaYugo = "";
   if (statusYugo) {
     // Jika statusYugo bernilai boolean true atau angka, set minimal 1. Jika angka (1, 2, dst), ulangi sebanyak angka tersebut.
-    const jumlahBintang = typeof statusYugo === "number" ? statusYugo : 1;
+    const jumlahBintang = cellData.jumlahArahYugo || 1;
     tandaYugo = " " + "*".repeat(jumlahBintang); // Menghasilkan " *" atau " **" dst
   }
 
@@ -211,13 +244,14 @@ function catatRiwayatLangkah(row, col, player) {
 }
 
 function undo() {
-  if (gameState.igoWinningKotak.length === 0 && gameState.lastMove === null)
+  if (gameState.historyStack.length === 0)
     return;
 
   // 1. Ambil koordinat langkah terakhir yang memicu Igo
-  const rTerakhir = gameState.lastMove.row;
-  const cTerakhir = gameState.lastMove.col;
-  const warnaTerakhir = gameState.board[rTerakhir][cTerakhir].color;
+  const langkahTerakhir = gameState.historyStack.pop();
+  const rTerakhir = langkahTerakhir.row;
+  const cTerakhir = langkahTerakhir.col;
+  const warnaTerakhir = langkahTerakhir.player;
 
   // 2. Kembalikan status permainan menjadi aktif dan hidupkan interval timer lagi
   gameState.gameStatus = "active";
@@ -231,33 +265,41 @@ function undo() {
     mulaiIntervalTimer();
   }
 
-  // 3. Hapus bidak terakhir yang baru ditaruh dari virtual board!
-  const bidakTerakhir = gameState.board[rTerakhir][cTerakhir].isYugo;
-  // Jika bidak terakhir yang di-undo tadi ternyata sempat bermutasi jadi Yugo, kurangi skornya
-  if (bidakTerakhir) {
-    const jumlahKurangSkor =
-      typeof bidakTerakhir === "number" ? bidakTerakhir : 1;
-    gameState.scores[warnaTerakhir] -= jumlahKurangSkor;
+  // 3. Jika langkah yang di-undo menghasilkan Yugo, kurangi skor dan kembalikan Migo yang meledak
+  if (langkahTerakhir.isYugo) {
+    gameState.scores[warnaTerakhir] -= langkahTerakhir.jumlahArahYugo;
+
+    // Kembalikan Migo-Migo biasa yang sempat terhapus akibat ledakan Yugo ini
+    langkahTerakhir.migosTerhapus.forEach((migo) => {
+      gameState.board[migo.r][migo.c] = {
+        color: warnaTerakhir,
+        isYugo: false,
+        jumlahArahYugo: 0,
+        migosTerhapus: [],
+      };
+    });
   }
 
   // 4. Hapus total bidak pemicu terakhir dari virtual board
   gameState.board[rTerakhir][cTerakhir] = null;
 
   // 5. Bersihkan highlight hijau langkah terakhir agar kotak kembali normal!
-  gameState.lastMove = null;
+  gameState.igoWinningKotak = [];
 
   // 6. Ambil kembali Migo-Migo biasa yang sempat terhapus di virtual board
   // Berdasarkan koordinat kuning yang tersimpan di igoWinningKotak
-  gameState.igoWinningKotak.forEach((kotak) => {
-    // Lewati koordinat bidak terakhir karena sudah kita buat null di atas
-    if (kotak.r === rTerakhir && kotak.c === cTerakhir) return;
-
-    // Kembalikan bidak-bidak di sekitarnya menjadi Migo murni sewarna (bukan Yugo)
-    gameState.board[kotak.r][kotak.c] = {
-      color: warnaTerakhir,
-      isYugo: false,
+  if (gameState.historyStack.length > 0) {
+    // Intip langkah teratas saat ini di stack tanpa menghapusnya
+    const langkahSebelumnya =
+      gameState.historyStack[gameState.historyStack.length - 1];
+    gameState.lastMove = {
+      row: langkahSebelumnya.row,
+      col: langkahSebelumnya.col,
     };
-  });
+  } else {
+    // Jika stack benar-benar habis (papan kosong), hapus highlight last-move
+    gameState.lastMove = null;
+  }
 
   // 7. Kembalikan giliran (turn player) ke pemain yang melakukan undo tadi
   gameState.currentPlayer = warnaTerakhir;
@@ -278,19 +320,26 @@ function undo() {
     // Jika putih yang di-undo, hapus baris angka langkah terakhirnya secara utuh
     history.pop();
   } else {
-    // Jika hitam yang di-undo, kembalikan teks ke format melangkah milik putih saja
-    let barisTerakhir = history[history.length - 1];
-    const polaNomorLangkah = `${nomorLangkah}. `;
-    const panjangAwal =
-      barisTerakhir.indexOf(polaNomorLangkah) + polaNomorLangkah.length;
-
-    // Potong string tepat setelah 2 digit koordinat putih (misal: b7) ditambah spasi pemisah
-    let putih = barisTerakhir.substring(0, panjangAwal + 5);
-    history[history.length - 1] = putih;
-
     // Karena dibatalkan, kembalikan nomorLangkah mundur 1 tingkat!
     if (nomorLangkah > 1) {
       nomorLangkah--;
+    }
+
+    if (history.length > 0) {
+      let barisTerakhir = history[history.length - 1];
+
+      // Cari posisi teks penanda nomor langkah saat ini (misal: "3. ")
+      const polaNomorLangkah = `${nomorLangkah}. `;
+      const indexNomor = barisTerakhir.indexOf(polaNomorLangkah);
+
+      if (indexNomor !== -1) {
+        // Ambil string dari awal baris sampai tepat setelah koordinat milik putih (5 karakter setelah nomor langkah, misal "3. e4   ")
+        let panjangPutih = indexNomor + polaNomorLangkah.length + 5;
+        let teksPutihSaja = barisTerakhir.substring(0, panjangPutih);
+
+        // Ganti baris terakhir dengan milik putih saja tanpa notasi langkah hitam
+        history[history.length - 1] = teksPutihSaja;
+      }
     }
   }
 
@@ -325,9 +374,19 @@ function undo() {
 function tampilkanAlertUndo() {
   const btnUndo = document.getElementById("btnUndo");
   if (btnUndo) {
-    btnUndo.addEventListener("click", () => {
+    // Menggunakan .onclick memastikan hanya ada SATU fungsi yang terikat secara global pada tombol ini
+    btnUndo.onclick = function () {
+      // Jika modal sedang terbuka, cari instansinya untuk disembunyikan secara aman
+      const modalElement = document.getElementById("gameOverModal");
+      if (modalElement && modalElement.classList.contains("show")) {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+      }
+      // Jalankan logika inti undo
       undo();
-    });
+    };
   }
 }
 
@@ -444,13 +503,14 @@ function yugo(row, col, color) {
     },
   ];
 
-  let yugo = 0;
+  let yugo = false;
   let migos = [];
+  let longLine = false;
 
   // === TAHAP 1: CEK PEMBENTUKAN YUGO DARI MIGO BIASA ===
   papan.forEach((p) => {
     let hitungBidak = 1; // Hitung bidak yang baru ditaruh saat ini
-    let koordinat = [];
+    let koordinatMigo = [];
 
     p.pasang.forEach(([dr, dc]) => {
       let r = row + dr;
@@ -467,9 +527,8 @@ function yugo(row, col, color) {
       ) {
         hitungBidak++;
 
-        // JIKA BUKAN YUGO, baru masukkan ke daftar yang boleh dihapus
         if (!gameState.board[r][c].isYugo) {
-          koordinat.push({ r: r, c: c });
+          koordinatMigo.push({ r: r, c: c });
         }
 
         r += dr;
@@ -478,17 +537,34 @@ function yugo(row, col, color) {
     });
 
     // ATURAN GAME: Jika terbentuk minimal 4 bidak searah (sesuaikan angka 4 ini dengan mekanik aslinya)
-    if (hitungBidak >= 4) {
-      yugo++;
+    if (hitungBidak === 4) {
+      yugo = true;
 
-      migos = migos.concat(koordinat);
+      migos = migos.concat(koordinatMigo);
+    } else if (hitungBidak > 4) {
+      // LEBIH DARI 4 BIDAK SEJAJAR -> Menandai adanya Long Line ilegal di jalur ini
+      longLine = true;
     }
   });
 
-  if (yugo > 0) {
+  // KONDISI KHUSUS BLOKIR: Jika langkah tersebut memicu Long Line DAN tidak menghasilkan Yugo sama sekali di arah lain
+  if (longLine && !yugo) {
+    tampilkanAlert(
+      "gagal",
+      "Gagal!",
+      "Illegal move. You may not create a line longer than 4 of your own color",
+    );
+    return -1; // Kembalikan kode -1 agar handleKlikKotak membatalkan turn
+  }
+
+  if (yugo) {
+    const yugoScore = 1;
+
     // 1. Ubah bidak terakhir yang ditekan menjadi Yugo
-    gameState.board[row][col].isYugo = yugo;
-    gameState.scores[color] += yugo; // Tambahkan skor sesuai jumlah Yugo
+    gameState.board[row][col].isYugo = true;
+    gameState.board[row][col].jumlahArahYugo = yugoScore;
+    gameState.board[row][col].migosTerhapus = migos; // KUNCI UTAMA: Simpan daftar koordinat Migo yang meledak!
+    gameState.scores[color] += yugoScore; // Tambahkan skor sesuai jumlah Yugo
 
     // 2. MEKANIK BARU: Hapus semua Migo yang sejajar dengannya dari virtual board
     migos.forEach((migo) => {
@@ -543,11 +619,76 @@ function yugo(row, col, color) {
         }, 100);
       }
     });
+
+    return yugoScore; // Kembalikan nilai 1
   } else {
     gameState.board[row][col].isYugo = false;
-  }
+    gameState.board[row][col].jumlahArahYugo = 0;
+    gameState.board[row][col].migosTerhapus = [];
 
-  return yugo; // Return jumlah Yugo agar bisa dibaca langsung oleh handleKlikKotak
+    return 0; // Kembalikan nilai 0 jika tidak terbentuk Yugo sama sekali
+  }
+}
+
+function limaMigo(row, col, color) {
+  const papan = [
+    {
+      pasang: [
+        [0, 1],
+        [0, -1],
+      ],
+    }, // Horizontal
+    {
+      pasang: [
+        [1, 0],
+        [-1, 0],
+      ],
+    }, // Vertikal
+    {
+      pasang: [
+        [1, 1],
+        [-1, -1],
+      ],
+    }, // Diagonal 1
+    {
+      pasang: [
+        [1, -1],
+        [-1, 1],
+      ],
+    }, // Diagonal 2
+  ];
+
+  let illegalMove = false;
+
+  papan.forEach((p) => {
+    let hitungBidak = 1; // Anggap bidak baru ditaruh di sini
+
+    p.pasang.forEach(([dr, dc]) => {
+      let r = row + dr;
+      let c = col + dc;
+
+      // Hitung semua bidak sewarna yang sudah ada di jalur ini
+      while (
+        r >= 0 &&
+        r < 8 &&
+        c >= 0 &&
+        c < 8 &&
+        gameState.board[r][c] !== null &&
+        gameState.board[r][c].color === color
+      ) {
+        hitungBidak++;
+        r += dr;
+        c += dc;
+      }
+    });
+
+    // Jika total bidak segaris melebihi 4, maka langkah ini ilegal
+    if (hitungBidak > 4) {
+      illegalMove = true;
+    }
+  });
+
+  return illegalMove;
 }
 
 function switchPanels() {
@@ -634,6 +775,7 @@ function resetPapan() {
   gameState.lastMove = null;
   gameState.scores = { white: 0, black: 0 };
   gameState.igoWinningKotak = []; // Kosongkan daftar petak kuning Igo
+  gameState.historyStack = [];
 
   clearInterval(timerIntervalId);
   timerIntervalId = null;

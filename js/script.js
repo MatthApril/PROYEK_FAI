@@ -15,6 +15,7 @@ const moveHistory = document.getElementById("moveHistory"); // Textarea Move His
 const btnGame = document.getElementById("startGame");
 const configPanel = document.getElementById("config-panel");
 const historyPanel = document.getElementById("history-panel");
+const pilihanMusuh = document.getElementById("pilihanMusuh"); // Dropdown pilihan mode lawan (Local Play, AI Beginner, dst)
 
 // State Utama Permainan (Sesuai struktur GameState)
 let gameState = {
@@ -35,6 +36,13 @@ let waktuDetikHitam;
 let timerIntervalId = null;
 let nilaiIncrement = 0;
 let nomorLangkah = 1; // Untuk menghitung Move History (1. f2 f3, dst)
+
+// State untuk Mode Permainan
+let modeLawan = "Local Play"; // Default mode, akan diupdate saat Start Game ditekan berdasarkan pilihan dropdown
+let aiColor = "black";
+let humanColor = "white";
+let aiSedangBerpikir = false; // Flag untuk menandai apakah AI sedang dalam proses berpikir, agar bisa dihandle dengan benar saat undo langkah di mode AI
+let aiTimeoutId = null; // untuk menyimpan ID timeout AI agar bisa dibatalkan jika diperlukan
 
 // Array konversi index kolom ke Huruf Notasi Catur
 const indeksKeHuruf = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -134,9 +142,20 @@ function renderBoard() {
 // 3. GAMEPLAY & LOGIKA KLIK
 // ==========================================
 
-function handleKlikKotak(row, col) {
+function handleKlikKotak(row, col, dariAI = false) {
+  // tambahan parameter dariAI untuk membedakan klik manual vs AI
   if (gameState.gameStatus !== "active") {
     tampilkanAlert("gagal", "Gagal!", "Silahkan mulai game terlebih dahulu!");
+    return;
+  }
+
+  // Jika mode lawan adalah AI, pastikan hanya giliran manusia yang bisa melakukan klik manual
+  if (
+    modeLawan !== "Local Play" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
+  ) {
+    tampilkanAlert("gagal", "Gagal!", "Sekarang giliran AI!");
     return;
   }
 
@@ -212,6 +231,28 @@ function handleKlikKotak(row, col) {
   // 5. UPDATE TAMPILAN LAYAR
   updateDisplayWaktu();
   renderBoard();
+
+  // 7. JALANKAN LOGIKA AI SESUAI MODE BEGGINER (Random) - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
+  if (
+    modeLawan === "AI - Beginner" &&
+    gameState.gameStatus === "active" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
+  ) {
+    jalankanAIBeginner();
+  }
+
+  // 8. JALANKAN LOGIKA AI SESUAI MODE NOVICE (Lebih "Cerdas") - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
+  if (
+    modeLawan === "AI - Novice" &&
+    gameState.gameStatus === "active" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
+  ) {
+    jalankanAINovice();
+  }
+
+  
 }
 
 // Fungsi menerjemahkan koordinat matriks array ke format catur (Contoh: baris 0, kolom 0 -> a8)
@@ -244,8 +285,7 @@ function catatRiwayatLangkah(row, col, player) {
 }
 
 function undo() {
-  if (gameState.historyStack.length === 0)
-    return;
+  if (gameState.historyStack.length === 0) return;
 
   // 1. Ambil koordinat langkah terakhir yang memicu Igo
   const langkahTerakhir = gameState.historyStack.pop();
@@ -371,6 +411,61 @@ function undo() {
   updateDisplayWaktu();
 }
 
+// Fungsi utama untuk menangani logika undo langkah di mode AI, dengan memperhatikan berbagai kondisi seperti apakah AI sedang berpikir, apakah langkah terakhir adalah langkah AI, dan memastikan giliran kembali ke pemain manusia setelah undo
+function undoAIMode() {
+  if (aiSedangBerpikir) {
+    clearTimeout(aiTimeoutId);
+    aiTimeoutId = null;
+    aiSedangBerpikir = false;
+
+    // Karena AI belum jalan, cukup undo langkah player terakhir
+    if (gameState.historyStack.length > 0) {
+      undo();
+    }
+
+    gameState.currentPlayer = humanColor;
+    infoHitam.classList.remove("bg-primary");
+    infoPutih.classList.add("bg-primary");
+
+    renderBoard();
+    updateDisplayWaktu();
+    return;
+  }
+
+  if (gameState.historyStack.length === 0) {
+    return;
+  }
+
+  if (modeLawan === "Local Play") {
+    undo();
+    return;
+  }
+
+  const langkahTerakhir =
+    gameState.historyStack[gameState.historyStack.length - 1];
+
+  if (langkahTerakhir.player === aiColor) {
+    undo();
+  }
+
+  if (gameState.historyStack.length > 0) {
+    const langkahSebelumnya =
+      gameState.historyStack[gameState.historyStack.length - 1];
+
+    if (langkahSebelumnya.player === humanColor) {
+      undo();
+    }
+  }
+
+  gameState.currentPlayer = humanColor;
+
+  infoHitam.classList.remove("bg-primary");
+  infoPutih.classList.add("bg-primary");
+
+  renderBoard();
+  updateDisplayWaktu();
+}
+
 function tampilkanAlertUndo() {
   const btnUndo = document.getElementById("btnUndo");
   if (btnUndo) {
@@ -385,7 +480,7 @@ function tampilkanAlertUndo() {
         }
       }
       // Jalankan logika inti undo
-      undo();
+      undoAIMode();
     };
   }
 }
@@ -445,9 +540,12 @@ function startGame() {
   }
 
   resetPapan();
+
+  modeLawan = pilihanMusuh.value; // ini buat ngambil mode lawan yang dipilih di dropdown saat Start Game ditekan
+
   gameState.gameStatus = "active";
   switchPanels();
-  moveHistory.value = ""; // Reset papan history teks
+  moveHistory.value = "";
   nomorLangkah = 1;
 
   btnGame.textContent = "Resign";
@@ -540,7 +638,7 @@ function yugo(row, col, color) {
     // ATURAN GAME: Jika terbentuk minimal 4 bidak searah (sesuaikan angka 4 ini dengan mekanik aslinya)
     if (hitungBidak === 4) {
       yugo = true;
-      jumlahMigoSejajar++
+      jumlahMigoSejajar++;
 
       migos = migos.concat(koordinatMigo);
     } else if (hitungBidak > 4) {
@@ -566,7 +664,7 @@ function yugo(row, col, color) {
     gameState.board[row][col].isYugo = true;
     gameState.board[row][col].jumlahArahYugo = jumlahMigoSejajar;
     gameState.board[row][col].migosTerhapus = migos; // KUNCI UTAMA: Simpan daftar koordinat Migo yang meledak!
-    gameState.scores[color] += 1; // Tambahkan skor sesuai jumlah Yugo
+    gameState.scores[color] += yugoScore; // Tambahkan skor sesuai jumlah Yugo
 
     // 2. MEKANIK BARU: Hapus semua Migo yang sejajar dengannya dari virtual board
     migos.forEach((migo) => {
@@ -752,7 +850,7 @@ function akhiriGame(pesan) {
   const btnUndoModal = document.getElementById("btnUndo");
   if (btnUndoModal) {
     btnUndoModal.onclick = function () {
-      undo(); // Jalankan fungsi undo utama
+      undoAIMode(); // Jalankan fungsi undo utama
       instanceModalGameOver.hide(); // Sembunyikan modal setelah di-undo
     };
   }
@@ -781,6 +879,10 @@ function resetPapan() {
 
   clearInterval(timerIntervalId);
   timerIntervalId = null;
+
+  clearTimeout(aiTimeoutId);
+  aiTimeoutId = null;
+  aiSedangBerpikir = false;
 
   const menitPilihan = parseInt(menit.value);
   waktuDetikPutih = menitPilihan * 60;

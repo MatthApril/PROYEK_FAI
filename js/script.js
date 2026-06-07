@@ -15,6 +15,7 @@ const moveHistory = document.getElementById("moveHistory"); // Textarea Move His
 const btnGame = document.getElementById("startGame");
 const configPanel = document.getElementById("config-panel");
 const historyPanel = document.getElementById("history-panel");
+const btnCopy = document.getElementById("btnCopy");
 
 // State Utama Permainan (Sesuai struktur GameState)
 let gameState = {
@@ -238,7 +239,7 @@ function catatRiwayatLangkah(row, col, player) {
   if (statusYugo) {
     // Jika statusYugo bernilai boolean true atau angka, set minimal 1. Jika angka (1, 2, dst), ulangi sebanyak angka tersebut.
     const jumlahBintang = cellData.jumlahArahYugo || 1;
-    tandaYugo = " " + "*".repeat(jumlahBintang); // Menghasilkan " *" atau " **" dst
+    tandaYugo = "*".repeat(jumlahBintang); // Menghasilkan "*" atau "**" dst
   }
 
   const notasiKandat = `${namaKolom}${namaBaris}${tandaYugo}`;
@@ -1063,4 +1064,29 @@ function eksekusiImportMoveHistory(str) {
       "Invalid move history format. Please paste the copied move history.",
     );
   }
+}
+
+if (btnCopy) {
+  btnCopy.addEventListener("click", () => {
+    const teksHistory = moveHistory.value.trim();
+
+    // Validasi jika riwayat langkah masih kosong murni
+    if (!teksHistory) {
+      return;
+    }
+
+    // Menggunakan Navigator Clipboard API modern untuk menyalin string teks
+    navigator.clipboard.writeText(teksHistory).catch((err) => {
+      // Fallback jika browser memblokir akses clipboard API karena masalah izin/HTTPS
+      const areaTeksSementara = document.createElement("textarea");
+      areaTeksSementara.value = teksHistory;
+      document.body.appendChild(areaTeksSementara);
+      areaTeksSementara.select();
+
+      try {
+        document.execCommand("copy");
+      } catch (error) {}
+      document.body.removeChild(areaTeksSementara);
+    });
+  });
 }

@@ -141,27 +141,50 @@ body {
   );
 }
 
-/* Efek Dot untuk status Yugo di tengah bidak */
+/* Base style untuk wadah yugo (berada di tengah-tengah migo) */
 .yugo {
   position: absolute;
-  width: 26%;
-  height: 26%;
-  border-radius: 50%;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
   top: 50%;
   left: 50%;
-  transform: translate(
-    -50%,
-    -50%
-  ); /* Menjaga koordinat mati di tengah lingkaran */
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
 }
 
+/* Pewarnaan dasar simbol Yugo (Silahkan sesuaikan warnanya) */
 .yugo-putih {
-  background-color: red; /* Dot merah di tengah bidak putih */
+  background-color: red;
+}
+.yugo-hitam {
+  background-color: red;
 }
 
-.yugo-hitam {
-  background-color: red; /* Dot merah di tengah bidak hitam */
+/* Bentuk 1: Dot (Lingkaran Kecil) */
+.yugo-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* Bentuk 2: Oval */
+.yugo-oval {
+  width: 20px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Bentuk 3: Segitiga (Menggunakan Clip-path agar warna background tetap bekerja) */
+.yugo-triangle {
+  width: 16px;
+  height: 16px;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  border-radius: 0%; /* Reset jika ada pembulatan bawaan */
+}
+
+/* Bentuk 4: Persegi */
+.yugo-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 0%; /* Menghilangkan efek lingkaran */
 }
 
 /* ===== ANGKA & HURUF OVERLAY ===== */

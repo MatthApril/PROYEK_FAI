@@ -2,6 +2,7 @@
 // 1. INITIAL SETUP & STATE MANAGEMENT
 // ==========================================
 
+const pilihanMusuh = document.getElementById("pilihanMusuh");
 const cekTimer = document.getElementById("cekTimer");
 const waktuPutih = document.querySelectorAll(".waktu-putih");
 const waktuHitam = document.querySelectorAll(".waktu-hitam");
@@ -147,9 +148,17 @@ function renderBoard() {
 // 3. GAMEPLAY & LOGIKA KLIK
 // ==========================================
 
-function handleKlikKotak(row, col) {
+function handleKlikKotak(row, col, dariAI = false) {
   if (gameState.gameStatus !== "active") {
     tampilkanAlert("gagal", "Gagal!", "Silahkan mulai game terlebih dahulu!");
+    return;
+  }
+
+  if (
+    !dariAI &&
+    pilihanMusuh.value !== "Local Play" &&
+    gameState.currentPlayer === aiColor
+  ) {
     return;
   }
 
@@ -226,6 +235,24 @@ function handleKlikKotak(row, col) {
   // 5. UPDATE TAMPILAN LAYAR
   updateDisplayWaktu();
   renderBoard();
+
+  cekGiliranAI();
+}
+
+function cekGiliranAI() {
+  if (gameState.gameStatus !== "active") return;
+  if (aiSedangBerpikir) return;
+
+  const modeMusuh = pilihanMusuh.value;
+
+  // AI hanya jalan sebagai black
+  if (gameState.currentPlayer !== aiColor) return;
+
+  if (modeMusuh === "AI - Beginner") {
+    jalankanAIBeginner();
+  } else if (modeMusuh === "AI - Novice") {
+    jalankanAINovice();
+  }
 }
 
 // Fungsi menerjemahkan koordinat matriks array ke format catur (Contoh: baris 0, kolom 0 -> a8)
@@ -693,31 +720,52 @@ function akhiriGame(pesan) {
   const teksDeskripsiModal = document.querySelector(
     "#gameOverModal .modal-body p.fs-5",
   );
+
   if (teksDeskripsiModal) {
     teksDeskripsiModal.innerText = pesan;
   }
 
-  // 2. Munculkan modal Game Over ke layar secara resmi
+  // 2. Munculkan modal Game Over
   const modalGameOverElement = document.getElementById("gameOverModal");
-  const instanceModalGameOver = bootstrap.Modal.getOrCreateInstance(modalGameOverElement);
+  const instanceModalGameOver =
+    bootstrap.Modal.getOrCreateInstance(modalGameOverElement);
+
   instanceModalGameOver.show();
 
-  const btnUndoModal = document.getElementById("btnUndo");
-  if (btnUndoModal) {
-    btnUndoModal.onclick = function () {
-      undo(); // Jalankan fungsi undo utama
-      instanceModalGameOver.hide(); // Sembunyikan modal setelah di-undo
+  // 3. Tombol Review Game
+  const btnReviewGame = document.getElementById("btnReviewGame");
+
+  if (btnReviewGame) {
+    btnReviewGame.onclick = function () {
+      // Tutup modal Game Over
+      instanceModalGameOver.hide();
+
+      // Tampilkan panel Move History, bukan config panel
+      configPanel.classList.add("d-none");
+      configPanel.classList.remove("d-block");
+
+      historyPanel.classList.add("d-block");
+      historyPanel.classList.remove("d-none");
+
+      // Pastikan papan tetap menampilkan posisi terakhir
+      renderBoard();
+
+      // Alert optional
+      tampilkanAlert(
+        "sukses",
+        "Review Mode",
+        "You can review the move history.",
+      );
     };
   }
 
-  // 3. Ubah tombol kontrol kanan kembali ke sedia kala
+  // 4. Tombol Start kembali normal
   btnGame.innerText = "Start";
   btnGame.classList.remove("btn-dark");
   btnGame.classList.add("btn-success");
 
-  if (gameState.gameStatus !== "finished") {
-    switchPanels();
-  }
+  // 5. Saat game selesai, default-nya tampilkan config panel
+  switchPanels();
 }
 
 function resetPapan() {
@@ -736,6 +784,13 @@ function resetPapan() {
 
   clearInterval(timerIntervalId);
   timerIntervalId = null;
+
+  aiSedangBerpikir = false;
+
+  if (aiTimeoutId !== null) {
+    clearTimeout(aiTimeoutId);
+    aiTimeoutId = null;
+  }
 
   const menitPilihan = parseInt(menit.value);
   waktuDetikPutih = menitPilihan * 60;
@@ -1091,5 +1146,13 @@ if (btnCopy) {
       } catch (error) {}
       document.body.removeChild(areaTeksSementara);
     });
+  });
+}
+
+const btnUndo = document.getElementById("btnUndo");
+
+if (btnUndo) {
+  btnUndo.addEventListener("click", function () {
+    undo();
   });
 }

@@ -1,6 +1,5 @@
-
 function jalankanAIBeginner() {
-  aiSedangBerpikir = true; // ai sedang mikir 
+  aiSedangBerpikir = true; // ai sedang mikir
 
   aiTimeoutId = setTimeout(() => {
     const langkahLegal = ambilSemuaLangkahLegal(aiColor); // ambil semua langkah legal untuk board asli, karena Beginner cuma lihat langkah legal tanpa simulasi
@@ -12,13 +11,13 @@ function jalankanAIBeginner() {
       return;
     }
 
-    const langkahYugo = langkahLegal.filter((langkah) =>
-      apakahMembentukYugo(langkah.row, langkah.col, aiColor) // ai check adakah langkah yang bisa bikin yugo
+    const langkahYugo = langkahLegal.filter(
+      (langkah) => apakahMembentukYugo(langkah.row, langkah.col, aiColor), // ai check adakah langkah yang bisa bikin yugo
     );
 
     let langkahDipilih;
 
-    // Beginner: kalau ada peluang Yugo, 70% ambil. Sisanya random. 
+    // Beginner: kalau ada peluang Yugo, 70% ambil. Sisanya random.
     if (langkahYugo.length > 0 && Math.random() < 0.7) {
       const indexRandom = Math.floor(Math.random() * langkahYugo.length);
       langkahDipilih = langkahYugo[indexRandom];
@@ -34,13 +33,14 @@ function jalankanAIBeginner() {
   }, 500);
 }
 
-function jalankanAINovice() { // novice lebih tinggi karena sudah pakai minmax
+function jalankanAINovice() {
+  // novice lebih tinggi karena sudah pakai minmax
   aiSedangBerpikir = true;
 
   aiTimeoutId = setTimeout(() => {
     const langkahLegal = ambilSemuaLangkahLegalUntukBoard(
       gameState.board,
-      aiColor
+      aiColor,
     );
 
     if (langkahLegal.length === 0) {
@@ -50,17 +50,22 @@ function jalankanAINovice() { // novice lebih tinggi karena sudah pakai minmax
       return;
     }
 
-    const langkahYugoLangsung = langkahLegal.filter((langkah) => // ini berfungsi untuk mencari langkah yang bisa langsung membentuk Yugo tanpa simulasi, karena kalau langsung Yugo kan pasti bagus banget buat AI
-      apakahMembentukYugoUntukBoard(
-        gameState.board,
-        langkah.row,
-        langkah.col,
-        aiColor
-      )
+    const langkahYugoLangsung = langkahLegal.filter(
+      (
+        langkah, // ini berfungsi untuk mencari langkah yang bisa langsung membentuk Yugo tanpa simulasi, karena kalau langsung Yugo kan pasti bagus banget buat AI
+      ) =>
+        apakahMembentukYugoUntukBoard(
+          gameState.board,
+          langkah.row,
+          langkah.col,
+          aiColor,
+        ),
     );
 
     if (langkahYugoLangsung.length > 0) {
-      const indexRandom = Math.floor(Math.random() * langkahYugoLangsung.length);
+      const indexRandom = Math.floor(
+        Math.random() * langkahYugoLangsung.length,
+      );
       const langkahDipilih = langkahYugoLangsung[indexRandom];
 
       aiSedangBerpikir = false;
@@ -76,13 +81,7 @@ function jalankanAINovice() { // novice lebih tinggi karena sudah pakai minmax
     langkahLegal.forEach((langkah) => {
       const boardSimulasi = cloneBoard(gameState.board);
 
-      
-      jalankanLangkahSimulasi(
-        boardSimulasi,
-        langkah.row,
-        langkah.col,
-        aiColor
-      );
+      jalankanLangkahSimulasi(boardSimulasi, langkah.row, langkah.col, aiColor);
 
       const skor = minimaxNovice(boardSimulasi, 1, false); // ini bagian minmaxnya
 
@@ -92,7 +91,8 @@ function jalankanAINovice() { // novice lebih tinggi karena sudah pakai minmax
       }
     });
 
-    if (Math.random() < 0.15) { // random nya 15%
+    if (Math.random() < 0.15) {
+      // random nya 15%
       const indexRandom = Math.floor(Math.random() * langkahLegal.length);
       langkahTerbaik = langkahLegal[indexRandom];
     }
@@ -103,7 +103,6 @@ function jalankanAINovice() { // novice lebih tinggi karena sudah pakai minmax
     handleKlikKotak(langkahTerbaik.row, langkahTerbaik.col, true);
   }, 500);
 }
-
 
 function minimaxNovice(board, depth, isMaximizing) {
   if (depth === 0) {
@@ -128,7 +127,7 @@ function minimaxNovice(board, depth, isMaximizing) {
         boardSimulasi,
         langkah.row,
         langkah.col,
-        colorSekarang
+        colorSekarang,
       );
 
       const skor = minimaxNovice(boardSimulasi, depth - 1, false);
@@ -147,7 +146,7 @@ function minimaxNovice(board, depth, isMaximizing) {
         boardSimulasi,
         langkah.row,
         langkah.col,
-        colorSekarang
+        colorSekarang,
       );
 
       const skor = minimaxNovice(boardSimulasi, depth - 1, true);
@@ -158,8 +157,8 @@ function minimaxNovice(board, depth, isMaximizing) {
   }
 }
 
-
-function evaluasiBoardNovice(board) { // ini menggunakan heuristik buat evaluasi gerakan board nya 
+function evaluasiBoardNovice(board) {
+  // ini menggunakan heuristik buat evaluasi gerakan board nya
   let skor = 0;
 
   for (let r = 0; r < 8; r++) {
@@ -203,7 +202,7 @@ function evaluasiBoardNovice(board) { // ini menggunakan heuristik buat evaluasi
   return skor;
 }
 
-// fungsi untuk clone board agar simulasi tidak merusak board asli , jadi di rencanaain dlu pake cloneboard 
+// fungsi untuk clone board agar simulasi tidak merusak board asli , jadi di rencanaain dlu pake cloneboard
 function cloneBoard(board) {
   return board.map((row) =>
     row.map((cell) => {
@@ -215,7 +214,7 @@ function cloneBoard(board) {
         jumlahArahYugo: cell.jumlahArahYugo || 0,
         migosTerhapus: cell.migosTerhapus ? [...cell.migosTerhapus] : [],
       };
-    })
+    }),
   );
 }
 
@@ -311,7 +310,7 @@ function cekYugoSimulasi(board, row, col, color) {
 function ambilSemuaLangkahLegal(color) {
   return ambilSemuaLangkahLegalUntukBoard(gameState.board, color);
 }
-// cek legal apa ngga langkah nya 
+// cek legal apa ngga langkah nya
 function apakahLangkahLegal(row, col, color) {
   return apakahLangkahLegalUntukBoard(gameState.board, row, col, color);
 }
@@ -332,7 +331,7 @@ function ambilSemuaLangkahLegalUntukBoard(board, color) {
 
   return langkah;
 }
- // cek legal apa ngga langkah nya di board tertentu, ini untuk simulasi di minmax, jadi tidak merubah state asli, dan juga untuk cek langkah legal di board simulasi
+// cek legal apa ngga langkah nya di board tertentu, ini untuk simulasi di minmax, jadi tidak merubah state asli, dan juga untuk cek langkah legal di board simulasi
 function apakahLangkahLegalUntukBoard(board, row, col, color) {
   if (board[row][col] !== null) {
     return false;

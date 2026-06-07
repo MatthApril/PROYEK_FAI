@@ -251,8 +251,6 @@ function handleKlikKotak(row, col, dariAI = false) {
   ) {
     jalankanAINovice();
   }
-
-  
 }
 
 // Fungsi menerjemahkan koordinat matriks array ke format catur (Contoh: baris 0, kolom 0 -> a8)

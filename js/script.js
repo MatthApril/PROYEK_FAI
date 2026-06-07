@@ -433,28 +433,31 @@ function updateDisplayWaktu() {
 
 function startGame() {
   if (gameState.gameStatus === "active") {
-    const myModal = new bootstrap.Modal(document.getElementById("resignModal"));
+    const resignModalEl = document.getElementById("resignModal");
+    const myModal = bootstrap.Modal.getOrCreateInstance(resignModalEl);
     myModal.show();
 
-    document
-      .getElementById("btnConfirmResign")
-      .addEventListener("click", function () {
-        btnGame.innerText = "Start";
-        btnGame.classList.remove("btn-dark");
-        btnGame.classList.add("btn-success");
+    // Use .onclick to ensure only ONE handler is ever bound (no stacking)
+    document.getElementById("btnConfirmResign").onclick = function () {
+      btnGame.innerText = "Start";
+      btnGame.classList.remove("btn-dark");
+      btnGame.classList.add("btn-success");
 
-        let pesan = "";
-        if (gameState.currentPlayer === "white") {
-          pesan = "Black wins by resignation!";
-        } else {
-          pesan = "White wins by resignation!";
-        }
+      let pesan = "";
+      if (gameState.currentPlayer === "white") {
+        pesan = "Black wins by resignation!";
+      } else {
+        pesan = "White wins by resignation!";
+      }
+
+      // Hide resign modal first, then show game over after it's fully hidden
+      myModal.hide();
+
+      resignModalEl.addEventListener("hidden.bs.modal", function onHidden() {
+        resignModalEl.removeEventListener("hidden.bs.modal", onHidden);
         akhiriGame(pesan);
-
-        const modalElement = document.getElementById("resignModal");
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-        modalInstance.hide();
       });
+    };
     return;
   }
 
@@ -695,7 +698,7 @@ function akhiriGame(pesan) {
 
   // 2. Munculkan modal Game Over ke layar secara resmi
   const modalGameOverElement = document.getElementById("gameOverModal");
-  const instanceModalGameOver = new bootstrap.Modal(modalGameOverElement);
+  const instanceModalGameOver = bootstrap.Modal.getOrCreateInstance(modalGameOverElement);
   instanceModalGameOver.show();
 
   const btnUndoModal = document.getElementById("btnUndo");

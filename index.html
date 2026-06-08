@@ -109,15 +109,48 @@
                 <div class="form-baris mb-3">
                   <label for="pilihanMusuh">Opponent:</label>
 
-                  <select id="pilihanMusuh" class="form-select">
+                  <select id="pilihanMusuh" class="form-select" onchange="toggleAISettings()">
                     <option>Local Play</option>
-                    <option>AI - Beginner</option>
-                    <option>AI - Novice</option>
-                    <option>AI - Intermediate</option>
-                    <option>AI - Advanced</option>
-                    <option>AI - Expert</option>
-                    <option>AI - Master</option>
+                    <option>Artificial Intelligence</option>
                   </select>
+                </div>
+
+                <!-- AI SETTINGS: Alpha-Beta Pruning & Depth (hanya tampil jika AI dipilih) -->
+                <div id="aiSettingsPanel" class="ai-settings-panel" style="display: none;">
+                  <div class="ai-settings-header">
+                    <span>⚙️ AI Settings</span>
+                  </div>
+
+                  <div class="ai-setting-row">
+                    <label>Alpha-Beta Pruning:</label>
+                    <div class="timer-control d-flex align-items-center gap-2">
+                      <span class="ai-label-off">Off</span>
+
+                      <input type="checkbox" id="toggleAlphaBeta" checked />
+
+                      <label for="toggleAlphaBeta" class="toggle toggle-ab">
+                        <span></span>
+                      </label>
+
+                      <span class="ai-label-on">On</span>
+                    </div>
+                  </div>
+
+                  <div class="ai-setting-row">
+                    <label for="inputDepth">Search Depth:</label>
+                    <div class="depth-control d-flex align-items-center gap-2">
+                      <input
+                        type="range"
+                        id="inputDepth"
+                        class="form-range depth-slider"
+                        min="1"
+                        max="5"
+                        value="2"
+                        oninput="updateDepthLabel(this.value)"
+                      />
+                      <span id="depthLabel" class="depth-label">2</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="form-baris mb-3">

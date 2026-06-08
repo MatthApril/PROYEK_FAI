@@ -327,6 +327,116 @@ body {
   margin-bottom: 18px;
 }
 
+/* ===== AI SETTINGS PANEL ===== */
+.ai-settings-panel {
+  background: #f0f6fc;
+  border: 2px solid #d0dce8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-settings-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #26384b;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d0dce8;
+}
+
+.ai-setting-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.ai-setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.ai-setting-row label {
+  font-weight: 500;
+  color: #3a4f63;
+}
+
+.ai-label-off,
+.ai-label-on {
+  font-size: 12px;
+  font-weight: 600;
+  color: #607080;
+}
+
+/* Alpha-Beta toggle — reuse .toggle pattern */
+#toggleAlphaBeta {
+  display: none;
+}
+
+.toggle-ab {
+  width: 44px;
+  height: 23px;
+  background: #28e761;
+  border-radius: 20px;
+  padding: 3px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.toggle-ab span {
+  display: block;
+  width: 17px;
+  height: 17px;
+  background: white;
+  border-radius: 50%;
+  transform: translateX(21px);
+  transition: 0.25s;
+}
+
+#toggleAlphaBeta:not(:checked) + .toggle-ab {
+  background: #ff4b4b;
+}
+
+#toggleAlphaBeta:not(:checked) + .toggle-ab span {
+  transform: translateX(0);
+}
+
+/* Depth slider */
+.depth-control {
+  width: 100%;
+}
+
+.depth-slider {
+  flex: 1;
+  accent-color: #26384b;
+}
+
+.depth-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  background: #26384b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
 /* ===== IMPORT BUTTON ===== */
 .import {
   width: 100%;

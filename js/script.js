@@ -41,6 +41,29 @@ let historyStack = []; // Menyimpan tumpukan memori setiap langkah untuk multi-u
 // Array konversi index kolom ke Huruf Notasi Catur
 const indeksKeHuruf = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
+// State untuk Mode Permainan (AI)
+const pilihanMusuh = document.getElementById("pilihanMusuh"); // Dropdown pilihan mode lawan (Local Play, AI Beginner, dst)
+let modeLawan = "Local Play"; // Default mode, akan diupdate saat Start Game ditekan berdasarkan pilihan dropdown
+let aiColor = "black";
+let humanColor = "white";
+let aiSedangBerpikir = false; // Flag untuk menandai apakah AI sedang dalam proses berpikir
+let aiTimeoutId = null; // untuk menyimpan ID timeout AI agar bisa dibatalkan jika diperlukan
+
+// Fungsi untuk menampilkan/menyembunyikan panel AI Settings berdasarkan pilihan opponent
+function toggleAISettings() {
+  const panel = document.getElementById("aiSettingsPanel");
+  if (pilihanMusuh.value === "Artificial Intelligence") {
+    panel.style.display = "block";
+  } else {
+    panel.style.display = "none";
+  }
+}
+
+// Fungsi untuk update label angka depth saat slider digeser
+function updateDepthLabel(value) {
+  document.getElementById("depthLabel").textContent = value;
+}
+
 // ==========================================
 // 2. LOGIKA GENERATE & RENDER BOARD
 // ==========================================
@@ -147,9 +170,20 @@ function renderBoard() {
 // 3. GAMEPLAY & LOGIKA KLIK
 // ==========================================
 
-function handleKlikKotak(row, col) {
+function handleKlikKotak(row, col, dariAI = false) {
+  // tambahan parameter dariAI untuk membedakan klik manual vs AI
   if (gameState.gameStatus !== "active") {
     tampilkanAlert("gagal", "Gagal!", "Silahkan mulai game terlebih dahulu!");
+    return;
+  }
+
+  // Jika mode lawan adalah AI, pastikan hanya giliran manusia yang bisa melakukan klik manual
+  if (
+    modeLawan !== "Local Play" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
+  ) {
+    tampilkanAlert("gagal", "Gagal!", "Sekarang giliran AI!");
     return;
   }
 
@@ -226,6 +260,16 @@ function handleKlikKotak(row, col) {
   // 5. UPDATE TAMPILAN LAYAR
   updateDisplayWaktu();
   renderBoard();
+
+  // 7. JALANKAN LOGIKA AI - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
+  if (
+    modeLawan !== "Local Play" &&
+    gameState.gameStatus === "active" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
+  ) {
+    jalankanAI();
+  }
 }
 
 // Fungsi menerjemahkan koordinat matriks array ke format catur (Contoh: baris 0, kolom 0 -> a8)
@@ -463,6 +507,9 @@ function startGame() {
   }
 
   resetPapan();
+
+  modeLawan = pilihanMusuh.value; // Ambil mode lawan yang dipilih di dropdown saat Start Game ditekan
+
   gameState.gameStatus = "active";
   switchPanels();
   moveHistory.value = ""; // Reset papan history teks
@@ -737,6 +784,10 @@ function resetPapan() {
   clearInterval(timerIntervalId);
   timerIntervalId = null;
 
+  clearTimeout(aiTimeoutId);
+  aiTimeoutId = null;
+  aiSedangBerpikir = false;
+
   const menitPilihan = parseInt(menit.value);
   waktuDetikPutih = menitPilihan * 60;
   waktuDetikHitam = menitPilihan * 60;
@@ -813,6 +864,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Bersihkan papan terlebih dahulu sebelum melakukan rekonstruksi data
       resetPapan();
 
+      // Ambil mode lawan dari dropdown agar import mempertimbangkan pemilihan opponent
+      modeLawan = pilihanMusuh.value;
+
       // DETEKSI FORMAT: Jika mengandung tanda kunci titik dua (:), maka dibaca sebagai Position String
       if (input.includes("WM:") || input.includes("START:")) {
         eksekusiImportPositionString(input);
@@ -820,6 +874,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Jika tidak, diasumsikan sebagai urutan baris Move History (Notasi Catur)
         eksekusiImportMoveHistory(input);
       }
+
+      cekTimer.checked = false;
+      aturTimer();
+
+      // Update tombol Start menjadi Resign karena game sekarang aktif
+      btnGame.textContent = "Resign";
+      btnGame.classList.remove("btn-success");
+      btnGame.classList.add("btn-dark");
 
       // Tutup modal bootstrap secara terprogram setelah berhasil diproses
       const modalImport = document.getElementById("importModal");
@@ -830,6 +892,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Bersihkan form input untuk penggunaan berikutnya
       teksInputImport.value = "";
+
+      // Jika mode lawan AI dan giliran sekarang adalah AI, langsung jalankan AI
+      if (
+        modeLawan !== "Local Play" &&
+        gameState.gameStatus === "active" &&
+        gameState.currentPlayer === aiColor
+      ) {
+        jalankanAI();
+      }
     });
   }
 });
@@ -1078,6 +1149,7 @@ if (btnCopy) {
       return;
     }
 
+    tampilkanAlert("sukses", "Sukses!", "Move history copied to clipboard.");
     // Menggunakan Navigator Clipboard API modern untuk menyalin string teks
     navigator.clipboard.writeText(teksHistory).catch((err) => {
       // Fallback jika browser memblokir akses clipboard API karena masalah izin/HTTPS

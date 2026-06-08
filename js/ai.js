@@ -1,6 +1,6 @@
 function jalankanAI() {
   aiSedangBerpikir = true;
-  
+
   const elemenToggle = document.getElementById("toggleAlphaBeta");
   const elemenDepth = document.getElementById("inputDepth");
 
@@ -106,13 +106,19 @@ function minimaxAlphaBeta(board, depth, alpha, beta, isMaximizing) {
         colorSekarang,
       );
 
-      const skor = minimaxAlphaBeta(boardSimulasi, depth - 1, alpha, beta, false);
+      const skor = minimaxAlphaBeta(
+        boardSimulasi,
+        depth - 1,
+        alpha,
+        beta,
+        false,
+      );
       skorTerbaik = Math.max(skorTerbaik, skor);
       alpha = Math.max(alpha, skorTerbaik);
 
       // ALPHA-BETA PRUNING: Potong cabang jika tidak berguna
       if (beta <= alpha) {
-        break; 
+        break;
       }
     }
     return skorTerbaik;
@@ -128,13 +134,19 @@ function minimaxAlphaBeta(board, depth, alpha, beta, isMaximizing) {
         colorSekarang,
       );
 
-      const skor = minimaxAlphaBeta(boardSimulasi, depth - 1, alpha, beta, true);
+      const skor = minimaxAlphaBeta(
+        boardSimulasi,
+        depth - 1,
+        alpha,
+        beta,
+        true,
+      );
       skorTerbaik = Math.min(skorTerbaik, skor);
       beta = Math.min(beta, skorTerbaik);
 
       // ALPHA-BETA PRUNING: Potong cabang jika tidak berguna
       if (beta <= alpha) {
-        break; 
+        break;
       }
     }
     return skorTerbaik;
@@ -227,8 +239,8 @@ function evaluasiBoard(board) {
   }
 
   let skor = 0;
-  const inOpening = hitungTotalBidak(board) < 30; 
-  
+  const inOpening = hitungTotalBidak(board) < 30;
+
   let aiYugos = 0;
   let humanYugos = 0;
 
@@ -401,18 +413,23 @@ function evaluasiKonektivitasLinear(board, r, c, color) {
 
 // HELPER 3: DETEKSI KEMENANGAN INSTAN (4 YUGO SEBARIS)
 function deteksiIgo(board, color) {
-  const arah = [[0, 1], [1, 0], [1, 1], [1, -1]]; // Horizontal, Vertikal, 2 Diagonal
+  const arah = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [1, -1],
+  ]; // Horizontal, Vertikal, 2 Diagonal
 
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       for (let [dr, dc] of arah) {
         let yugoCount = 0;
-        
+
         // Cek 4 petak ke depan
         for (let i = 0; i < 4; i++) {
           let nr = r + i * dr;
           let nc = c + i * dc;
-          
+
           if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
             let cell = board[nr][nc];
             if (cell !== null && cell.color === color && cell.isYugo) {
@@ -422,8 +439,8 @@ function deteksiIgo(board, color) {
             }
           }
         }
-        
-        if (yugoCount === 4){
+
+        if (yugoCount === 4) {
           // console.log(`Deteksi Igo: ${color} memiliki 4 Yugo sebaris di (${r}, ${c}) ke arah (${dr}, ${dc})`);
           return true; // Ditemukan 4 Yugo sebaris!
         }

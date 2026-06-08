@@ -1,4 +1,5 @@
-/* ===== RESET (Bootstrap sudah handle box-sizing) ===== */
+/* TEMA UPDATE : JUGLE */
+
 * {
   margin: 0;
   padding: 0;
@@ -11,28 +12,154 @@ body {
   overflow: hidden;
 }
 
-/* ===== LOGO ===== */
+body {
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(122, 186, 88, 0.28) 0%,
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 85% 18%,
+      rgba(94, 160, 70, 0.24) 0%,
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 30% 75%,
+      rgba(52, 112, 48, 0.22) 0%,
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 75% 70%,
+      rgba(30, 86, 38, 0.22) 0%,
+      transparent 24%
+    ),
+    linear-gradient(180deg, #4f8f4b 0%, #2f6a35 35%, #1e4d29 65%, #12321d 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at top left, rgba(0, 0, 0, 0.18), transparent 40%),
+    radial-gradient(ellipse at top right, rgba(0, 0, 0, 0.16), transparent 42%),
+    radial-gradient(
+      ellipse at bottom left,
+      rgba(0, 0, 0, 0.22),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      rgba(0, 0, 0, 0.2),
+      transparent 45%
+    ),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0px,
+      transparent 90px,
+      rgba(24, 68, 30, 0.08) 92px,
+      rgba(24, 68, 30, 0.08) 108px
+    );
+  z-index: -2;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 180px 90px at 8% 10%,
+      rgba(45, 110, 50, 0.28) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 220px 110px at 22% 6%,
+      rgba(38, 94, 44, 0.24) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 200px 100px at 80% 8%,
+      rgba(51, 120, 58, 0.25) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 180px 90px at 94% 14%,
+      rgba(30, 84, 38, 0.26) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 220px 110px at 12% 92%,
+      rgba(35, 88, 42, 0.22) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 220px 110px at 88% 90%,
+      rgba(33, 82, 40, 0.22) 0%,
+      transparent 72%
+    );
+  z-index: -1;
+}
+
+/* ========================= */
+/* ===== LAYOUT UTAMA ===== */
+/* ========================= */
+
+.konten {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
+    radial-gradient(
+      circle at top left,
+      rgba(138, 191, 94, 0.12),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(24, 82, 41, 0.16),
+      transparent 35%
+    );
+}
+
 .logo-besar img {
   width: calc(50vh - 100px);
   height: auto;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.35));
 }
 
-/* ===== AREA GAME ===== */
 .area-game {
   height: calc(100vh - 94px);
 }
 
+/* ========================= */
 /* ===== PAPAN GAME ===== */
+/* ========================= */
+
 .kotak-game {
   width: calc(90vh - 200px);
-  border: 3px solid #26384b;
-  background: #26384b;
+  border: 6px solid #4b2f14;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #7a4e23 0%, #5b3a18 45%, #3f240f 100%);
   cursor: pointer;
+  box-shadow:
+    0 18px 30px rgba(0, 0, 0, 0.45),
+    inset 2px 2px 0 rgba(255, 224, 160, 0.3),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.25);
 }
 
 .bar-pemain {
-  height: 40px;
-  background: #172433;
+  height: 42px;
+  background: linear-gradient(135deg, #214d25, #102d1a);
+  border-top: 2px solid rgba(255, 224, 145, 0.18);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+  color: #fff7d1 !important;
 }
 
 .bidak {
@@ -40,20 +167,30 @@ body {
   height: 24px;
 }
 
-.putih {
-  background: white;
-  border: 3px solid #b4c0c8;
+.putih,
+.bidak.putih {
+  background: #f7efd2;
+  border: 3px solid #b9914c;
 }
 
-.hitam {
-  background: #142536;
-  border: 3px solid #26384b;
+.hitam,
+.bidak.hitam {
+  background: #23351f;
+  border: 3px solid #0f1c10;
 }
 
-.waktu {
+.waktu,
+.waktu-putih,
+.waktu-hitam {
   font-size: 20px;
   letter-spacing: 1px;
+  color: #ffe08a;
+  text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.45);
 }
+
+/* ========================= */
+/* ===== GRID PAPAN ===== */
+/* ========================= */
 
 .papan {
   width: 100%;
@@ -61,143 +198,258 @@ body {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  background: #cfe6fb;
+  position: relative;
+  background: linear-gradient(145deg, #7cab49, #5b8f37);
+  border: 5px solid #6b431e;
+  box-shadow:
+    inset 0 8px 16px rgba(255, 255, 255, 0.12),
+    inset 0 -12px 20px rgba(0, 0, 0, 0.22),
+    inset 0 0 24px rgba(32, 68, 28, 0.35);
 }
 
 .kotak {
-  background: #cfe6fb;
-  border: 1px solid #a8bdcc;
-  transition: 0.15s ease;
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(56, 90, 33, 0.75);
+
+  background: linear-gradient(
+    135deg,
+    #9dcd67 0%,
+    #7fb74d 35%,
+    #5f9837 65%,
+    #4e812d 100%
+  );
+
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.12);
+
+  transition: all 0.18s ease;
+  overflow: hidden;
+  border-radius: 6px;
 }
 
-.kotak.last-move {
-  background-color: #79e3b7 !important; /* Warna hijau mint */
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.08); /* Inner shadow halus */
-  transition: background-color 0.25s ease;
+.kotak:nth-child(even) {
+  background: linear-gradient(
+    135deg,
+    #8fc85a 0%,
+    #6cab43 35%,
+    #588f33 65%,
+    #477928 100%
+  );
+}
+
+.kotak::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 47%,
+      rgba(235, 255, 210, 0.32) 49%,
+      rgba(235, 255, 210, 0.32) 51%,
+      transparent 53%,
+      transparent 100%
+    ),
+    repeating-linear-gradient(
+      25deg,
+      transparent 0px,
+      transparent 10px,
+      rgba(230, 255, 220, 0.12) 11px,
+      rgba(230, 255, 220, 0.12) 12px
+    );
 }
 
 .kotak:hover {
-  background: #a9c9e3;
+  transform: translateY(-1px);
+  background: linear-gradient(
+    135deg,
+    #b4df79 0%,
+    #8dc457 35%,
+    #6ca340 65%,
+    #588b31 100%
+  );
+
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.2),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.14),
+    0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
-/* Efek kotak kuning tebal saat berhasil membentuk Igo (4 Yugo sejajar) */
+.kotak.last-move {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 238, 130, 0.95),
+    rgba(118, 171, 61, 0.95)
+  ) !important;
+  box-shadow:
+    inset 0 0 16px rgba(255, 248, 180, 0.9),
+    0 0 10px rgba(255, 220, 80, 0.45);
+}
+
 .kotak.igo-winner {
-  outline: 4px solid yellow !important; /* Warna kuning solid tebal */
-  outline-offset: -4px; /* Memaksa outline masuk ke dalam border kotak */
-  z-index: 10; /* Memastikan border kuning berada di atas petak lainnya */
+  outline: 4px solid #ffd93d !important;
+  outline-offset: -4px;
+  box-shadow:
+    inset 0 0 18px rgba(255, 217, 61, 0.9),
+    0 0 12px rgba(255, 217, 61, 0.8);
+  z-index: 10;
 }
 
 .kotak.illegal-move {
-  background-color: red !important;
-  transition: background-color 0.2s ease;
+  background: #d63434 !important;
+  box-shadow:
+    inset 0 0 18px rgba(80, 0, 0, 0.5),
+    0 0 10px rgba(214, 52, 52, 0.35);
 }
 
+/* ========================= */
 /* ===== BIDAK MIGO ===== */
+/* ========================= */
+
 .migo {
-  width: 76%; /* Menggunakan % agar ukurannya responsif mengikuti ukuran kotak papan */
-  height: 76%; /* Sisa space memberikan ruang untuk efek bayangan di bawahnya */
+  width: 76%;
+  height: 76%;
   border-radius: 50%;
   position: relative;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.18s ease;
+  box-shadow:
+    0 8px 10px rgba(0, 0, 0, 0.38),
+    inset 0 2px 4px rgba(255, 255, 255, 0.18),
+    inset 0 -6px 8px rgba(0, 0, 0, 0.18);
+}
 
-  /* EFEK BAYANGAN: Membuat bidak terlihat nyata dan timbul dari papan */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+.migo::before {
+  content: "";
+  position: absolute;
+  top: 18%;
+  left: 20%;
+  width: 34%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  filter: blur(1px);
+}
+
+.migo::after {
+  content: "";
+  position: absolute;
+  bottom: -6%;
+  left: 18%;
+  width: 64%;
+  height: 18%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+  filter: blur(3px);
+  z-index: -1;
 }
 
 .migo:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.35);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow:
+    0 12px 14px rgba(0, 0, 0, 0.42),
+    inset 0 2px 5px rgba(255, 255, 255, 0.2),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Bidak putih seperti batu terang */
 .migo-putih {
-  background-color: #f0f0f0;
-  border: 3px solid #b0b0b0; /* Border abu-abu tebal sesuai gambar */
-
-  /* GRADASI RADIAL: Menentukan titik datang cahaya dari kiri-atas (30% 30%) */
-  background-image: radial-gradient(
-    circle at 30% 30%,
-    #ffffff 0%,
-    #f0f0f0 55%,
-    #d1d1d1 100%
+  border: 3px solid #a98a54;
+  background: radial-gradient(
+    circle at 30% 28%,
+    #fffdf4 0%,
+    #f2e6c7 35%,
+    #d5bd8f 70%,
+    #b79660 100%
   );
 }
 
+/* Bidak hitam seperti batu jungle gelap */
 .migo-hitam {
-  background-color: #1a1a1a;
-  border: 3px solid #333333; /* Border gelap yang halus melingkari bidak */
-
-  /* GRADASI RADIAL: Membuat highlight putih tipis di area hitam agar terkesan mengkilap */
-  background-image: radial-gradient(
-    circle at 30% 30%,
-    #555555 0%,
-    #1a1a1a 65%,
-    #000000 100%
+  border: 3px solid #141914;
+  background: radial-gradient(
+    circle at 30% 28%,
+    #66745d 0%,
+    #384434 32%,
+    #1d241c 68%,
+    #090c09 100%
   );
 }
 
-/* Base style untuk wadah yugo (berada di tengah-tengah migo) */
+/* ========================= */
+/* ===== SIMBOL YUGO ===== */
+/* ========================= */
+
 .yugo {
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 8;
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
 }
 
-/* Pewarnaan dasar simbol Yugo (Silahkan sesuaikan warnanya) */
-.yugo-putih {
-  background-color: red;
-}
+.yugo-putih,
 .yugo-hitam {
-  background-color: red;
+  background-color: #ff4b2f;
+  box-shadow: 0 0 6px rgba(255, 75, 47, 0.8);
 }
 
-/* Bentuk 1: Dot (Lingkaran Kecil) */
 .yugo-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
 }
 
-/* Bentuk 2: Oval */
 .yugo-oval {
   width: 20px;
   height: 10px;
   border-radius: 50%;
 }
 
-/* Bentuk 3: Segitiga (Menggunakan Clip-path agar warna background tetap bekerja) */
 .yugo-triangle {
   width: 16px;
   height: 16px;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  border-radius: 0%; /* Reset jika ada pembulatan bawaan */
+  border-radius: 0%;
 }
 
-/* Bentuk 4: Persegi */
 .yugo-square {
   width: 14px;
   height: 14px;
-  border-radius: 0%; /* Menghilangkan efek lingkaran */
+  border-radius: 0%;
 }
 
-/* ===== ANGKA & HURUF OVERLAY ===== */
-/* angka dan huruf tidak ikut merusak grid */
+/* ========================= */
+/* ===== ANGKA & HURUF ===== */
+/* ========================= */
+
 .angka,
 .huruf {
-  color: #6c7d89;
-  font-size: 14px;
   position: absolute;
-  padding-right: 0px;
+  z-index: 20;
+  pointer-events: none;
+  color: #fff1a8;
+  font-size: 14px;
+  font-weight: bold;
+  padding-right: 0;
+  text-shadow:
+    1px 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 5px rgba(86, 55, 18, 0.9);
 }
 
-/* posisi angka kiri */
+/* angka kiri */
 .angka {
   left: 10px;
 }
@@ -205,29 +457,36 @@ body {
 .angka-8 {
   top: 10px;
 }
+
 .angka-7 {
   top: 14.5%;
 }
+
 .angka-6 {
   top: 27%;
 }
+
 .angka-5 {
   top: 39.5%;
 }
+
 .angka-4 {
   top: 52%;
 }
+
 .angka-3 {
   top: 64.5%;
 }
+
 .angka-2 {
   top: 77%;
 }
+
 .angka-1 {
   top: 89.5%;
 }
 
-/* posisi huruf bawah */
+/* huruf bawah */
 .huruf {
   bottom: 10px;
 }
@@ -235,49 +494,51 @@ body {
 .huruf-a {
   left: 10%;
 }
+
 .huruf-b {
   left: 22%;
 }
+
 .huruf-c {
   left: 34.5%;
 }
+
 .huruf-d {
   left: 47%;
 }
+
 .huruf-e {
   left: 59.5%;
 }
+
 .huruf-f {
   left: 72%;
 }
+
 .huruf-g {
   left: 84.5%;
 }
+
 .huruf-h {
   left: 98%;
 }
 
+/* ========================= */
 /* ===== PANEL KANAN ===== */
+/* ========================= */
+
 .panel {
   width: 310px;
   height: calc(90vh - 120px);
-}
-
-/* Button styling override (warna & radius custom) */
-.tombol-atas .btn-success {
-  background: #27a844;
-  border-color: #27a844;
-}
-
-.tombol-atas .btn-dark {
-  background: #26384b;
-  border-color: #26384b;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
 }
 
 .isi-panel {
   height: calc(100% - 52px);
-  border-color: #26384b !important;
-  border-width: 3px !important;
+  background: linear-gradient(180deg, #fff4c8, #e6c982) !important;
+  border-color: #5b3a18 !important;
+  border-width: 4px !important;
+  color: #2d2415;
 }
 
 .form-baris {
@@ -287,7 +548,90 @@ body {
   font-size: 15px;
 }
 
+/* ========================= */
+/* ===== BUTTON ===== */
+/* ========================= */
+
+.tombol-atas .btn-success {
+  background: linear-gradient(135deg, #4f9b3d, #1f5b2a);
+  border-color: #1f5b2a;
+  color: #fff7d1;
+}
+
+.tombol-atas .btn-success:hover {
+  background: linear-gradient(135deg, #5cad46, #276b31);
+  border-color: #276b31;
+}
+
+.tombol-atas .btn-dark {
+  background: linear-gradient(135deg, #7a4a20, #3d2410);
+  border-color: #3d2410;
+  color: #fff7d1;
+}
+
+.tombol-atas .btn-dark:hover {
+  background: linear-gradient(135deg, #8c5829, #4d2c12);
+  border-color: #4d2c12;
+}
+
+.btn-primary {
+  background: #2f7d32;
+  border-color: #2f7d32;
+}
+
+.btn-primary:hover {
+  background: #246426;
+  border-color: #246426;
+}
+
+.btn-info,
+.import {
+  background: linear-gradient(135deg, #2d936c, #17604c) !important;
+  border-color: #17604c !important;
+  color: white !important;
+}
+
+.btn-info:hover,
+.import:hover {
+  background: linear-gradient(135deg, #36a87d, #1d7159) !important;
+  border-color: #1d7159 !important;
+}
+
+.import {
+  width: 100%;
+  padding: 14px 8px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* ========================= */
+/* ===== FORM & INPUT ===== */
+/* ========================= */
+
+.form-select,
+textarea,
+.form-control {
+  background-color: #fff8dc !important;
+  border: 2px solid #9b7134 !important;
+  color: #2d2415 !important;
+}
+
+.form-select:focus,
+textarea:focus,
+.form-control:focus {
+  border-color: #3f8d37 !important;
+  box-shadow: 0 0 0 0.2rem rgba(63, 141, 55, 0.25) !important;
+}
+
+textarea {
+  resize: none;
+}
+
+/* ========================= */
 /* ===== TIMER TOGGLE ===== */
+/* ========================= */
+
 #cekTimer {
   display: none;
 }
@@ -295,7 +639,7 @@ body {
 .toggle {
   width: 44px;
   height: 23px;
-  background: #28e761;
+  background: #44b84a;
   border-radius: 20px;
   padding: 3px;
   cursor: pointer;
@@ -313,7 +657,7 @@ body {
 }
 
 #cekTimer:not(:checked) + .toggle {
-  background: #ff4b4b;
+  background: #c84b31;
 }
 
 #cekTimer:not(:checked) + .toggle span {
@@ -448,7 +792,37 @@ body {
   font-weight: bold;
 }
 
-/* ===== MODAL OVERLAY ===== */
+/* ========================= */
+/* ===== MODAL BOOTSTRAP ===== */
+/* ========================= */
+
+.modal-content {
+  background: linear-gradient(180deg, #fff2bd, #dfbd70);
+  border: 5px solid #5b3a18 !important;
+  color: #2d2415;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+}
+
+.modal-content .btn-success {
+  background: linear-gradient(135deg, #4f9b3d, #1f5b2a);
+  border-color: #1f5b2a;
+}
+
+.modal-content .btn-danger {
+  background: linear-gradient(135deg, #d94a36, #8f231c);
+  border-color: #8f231c;
+}
+
+.modal-content .btn-dark {
+  background: linear-gradient(135deg, #7a4a20, #3d2410);
+  border-color: #3d2410;
+}
+
+/* ========================= */
+/* ===== MODAL OVERLAY CUSTOM ===== */
+/* Tetap dipertahankan kalau JS lama masih pakai */
+/* ========================= */
+
 .overlay {
   display: none;
   position: fixed;
@@ -464,8 +838,13 @@ body {
 }
 
 .merah {
-  color: red;
+  color: #d63434;
 }
+
+/* ========================= */
+/* ===== PAPAN KECIL ===== */
+/* Dipakai jika ada preview/import/review */
+/* ========================= */
 
 .papan-kecil {
   width: 290px;
@@ -473,14 +852,16 @@ body {
   margin: 0 auto 22px;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  background: #d3ecff;
-  border: 4px solid #26384b;
+  background: #85b957;
+  border: 4px solid #5b3a18;
   border-radius: 5px;
+  box-shadow: inset 0 0 14px rgba(32, 68, 28, 0.35);
 }
 
 .papan-kecil div {
-  border: 1px solid #aec3d2;
+  border: 1px solid rgba(75, 91, 36, 0.7);
   position: relative;
+  background: linear-gradient(135deg, #a3c96b, #6fa344);
 }
 
 .piece::after {
@@ -495,24 +876,28 @@ body {
 }
 
 .putih-piece::after {
-  background: white;
-  border: 3px solid #26384b;
+  background: #efe3bd;
+  border: 3px solid #a77b3b;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.35);
 }
 
 .hitam-piece::after {
-  background: #26384b;
-  border: 3px solid #111;
+  background: #1d2d1b;
+  border: 3px solid #0d190e;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.35);
 }
 
+/* ========================= */
 /* ===== CUSTOM ALERT ===== */
+/* ========================= */
+
 .alert-copy {
   top: 24px;
   right: 24px;
   width: 310px;
-  background: white;
-  border-left: 6px solid #27a844;
+  background: #fff4c8;
+  border-left: 6px solid #3f8d37;
   z-index: 999;
-
   opacity: 0;
   transform: translateX(40px);
   pointer-events: none;
@@ -527,16 +912,34 @@ body {
 .alert-icon {
   width: 38px;
   height: 38px;
-  background: #e8f8ee;
-  color: #27a844;
+  background: #dff3c8;
+  color: #2f7d32;
 }
 
 .alert-text strong {
-  color: #1f2a36;
+  color: #2d2415;
   font-size: 15px;
 }
 
 .alert-text span {
-  color: #607080;
+  color: #5f4b2b;
   font-size: 13px;
+}
+
+/* ========================= */
+/* ===== RESPONSIVE KECIL ===== */
+/* ========================= */
+
+@media (max-height: 720px) {
+  .logo-besar img {
+    width: calc(45vh - 100px);
+  }
+
+  .kotak-game {
+    width: calc(88vh - 190px);
+  }
+
+  .panel {
+    height: calc(90vh - 115px);
+  }
 }

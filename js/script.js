@@ -2,7 +2,6 @@
 // 1. INITIAL SETUP & STATE MANAGEMENT
 // ==========================================
 
-const pilihanMusuh = document.getElementById("pilihanMusuh");
 const cekTimer = document.getElementById("cekTimer");
 const waktuPutih = document.querySelectorAll(".waktu-putih");
 const waktuHitam = document.querySelectorAll(".waktu-hitam");
@@ -13,7 +12,7 @@ const infoPutih = document.getElementById("info-putih");
 const infoHitam = document.getElementById("info-hitam");
 const papanGame = document.getElementById("papanGame");
 const moveHistory = document.getElementById("moveHistory"); // Textarea Move History
-const btnGame = document.getElementById("startGame");
+const btnGame = document.getElementById("btnStart");
 const configPanel = document.getElementById("config-panel");
 const historyPanel = document.getElementById("history-panel");
 const btnCopy = document.getElementById("btnCopy");
@@ -249,13 +248,13 @@ function handleKlikKotak(row, col, dariAI = false) {
   if (gameState.currentPlayer === "white") {
     if (cekTimer.checked) waktuDetikPutih += nilaiIncrement;
     gameState.currentPlayer = "black";
-    infoPutih.classList.remove("bg-primary");
-    infoHitam.classList.add("bg-primary");
+    infoPutih.classList.remove("bg-success");
+    infoHitam.classList.add("bg-success");
   } else {
     if (cekTimer.checked) waktuDetikHitam += nilaiIncrement;
     gameState.currentPlayer = "white";
-    infoHitam.classList.remove("bg-primary");
-    infoPutih.classList.add("bg-primary");
+    infoHitam.classList.remove("bg-success");
+    infoPutih.classList.add("bg-success");
   }
 
   // 5. UPDATE TAMPILAN LAYAR
@@ -366,11 +365,11 @@ function undo() {
 
   // Sesuaikan indikator background giliran aktif di layar
   if (warnaTerakhir === "white") {
-    infoHitam.classList.remove("bg-primary");
-    infoPutih.classList.add("bg-primary");
+    infoHitam.classList.remove("bg-success");
+    infoPutih.classList.add("bg-success");
   } else {
-    infoPutih.classList.remove("bg-primary");
-    infoHitam.classList.add("bg-primary");
+    infoPutih.classList.remove("bg-success");
+    infoHitam.classList.add("bg-success");
   }
 
   // 8. Bersihkan riwayat langkah terakhir di Textarea Move History
@@ -527,7 +526,7 @@ function startGame() {
     waktuDetikPutih = menitPilihan * 60;
     waktuDetikHitam = menitPilihan * 60;
 
-    infoPutih.classList.add("bg-primary");
+    infoPutih.classList.add("bg-success");
     updateDisplayWaktu();
     mulaiIntervalTimer();
   }
@@ -814,8 +813,8 @@ function resetPapan() {
   waktuDetikPutih = menitPilihan * 60;
   waktuDetikHitam = menitPilihan * 60;
 
-  infoPutih.classList.remove("bg-primary");
-  infoHitam.classList.remove("bg-primary");
+  infoPutih.classList.remove("bg-success");
+  infoHitam.classList.remove("bg-success");
   moveHistory.value = "";
   nomorLangkah = 1;
 
@@ -999,11 +998,11 @@ function eksekusiImportPositionString(str) {
 
     // Sesuaikan panel indikator giliran aktif sesuai data START
     if (gameState.currentPlayer === "white") {
-      infoHitam.classList.remove("bg-primary");
-      infoPutih.classList.add("bg-primary");
+      infoHitam.classList.remove("bg-success");
+      infoPutih.classList.add("bg-success");
     } else {
-      infoPutih.classList.remove("bg-primary");
-      infoHitam.classList.add("bg-primary");
+      infoPutih.classList.remove("bg-success");
+      infoHitam.classList.add("bg-success");
     }
 
     gameState.gameStatus = "active";
@@ -1132,11 +1131,11 @@ function eksekusiImportMoveHistory(str) {
 
     // Set latar belakang indikator turn saat ini
     if (gameState.currentPlayer === "white") {
-      infoHitam.classList.remove("bg-primary");
-      infoPutih.classList.add("bg-primary");
+      infoHitam.classList.remove("bg-success");
+      infoPutih.classList.add("bg-success");
     } else {
-      infoPutih.classList.remove("bg-primary");
-      infoHitam.classList.add("bg-primary");
+      infoPutih.classList.remove("bg-success");
+      infoHitam.classList.add("bg-success");
     }
 
     // Sinkronisasi ulang tampilan angka fisik Yugo ke panel info HTML
@@ -1188,10 +1187,10 @@ if (btnCopy) {
   });
 }
 
-const btnUndo = document.getElementById("btnUndo");
+// const btnUndo = document.getElementById("btnUndo");
 
-if (btnUndo) {
-  btnUndo.addEventListener("click", function () {
-    undo();
-  });
-}
+// if (btnUndo) {
+//   btnUndo.addEventListener("click", function () {
+//     undo();
+//   });
+// }

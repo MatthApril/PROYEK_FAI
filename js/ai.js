@@ -1,3 +1,9 @@
+let aiSedangBerpikir = false;
+let aiTimeoutId = null;
+
+const aiColor = "black";
+const humanColor = "white";
+
 function jalankanAIBeginner() {
   aiSedangBerpikir = true; // ai sedang mikir
 

@@ -56,6 +56,14 @@ function jalankanAI() {
       if (skor > skorTerbaik) {
         skorTerbaik = skor;
         langkahTerbaik = langkah;
+      } else if (skor === skorTerbaik && langkahTerbaik !== null) {
+        // Jika bobot efektivitas sama, utamakan langkah yang lebih mengontrol poros tengah papan
+        if (
+          nilaiKontrolTengah(langkah.row, langkah.col) >
+          nilaiKontrolTengah(langkahTerbaik.row, langkahTerbaik.col)
+        ) {
+          langkahTerbaik = langkah;
+        }
       }
     });
 
@@ -239,6 +247,7 @@ function evaluasiBoard(board) {
   }
 
   let skor = 0;
+  const totalBidak = hitungTotalBidak(board);
   const inOpening = hitungTotalBidak(board) < 30;
 
   let aiYugos = 0;
@@ -250,15 +259,10 @@ function evaluasiBoard(board) {
   const ancamanAI = deteksiAncamanIgo(board, aiColor);
   const ancamanHuman = deteksiAncamanIgo(board, humanColor);
 
-  // Jika AI punya 3 Yugo sebaris (Must-Win)
-  if (ancamanAI === 1) skor += 50000;
-  // Jika AI punya 2 atau lebih jalur 3-Yugo sekaligus (DPA / Serangan Garpu!)
-  if (ancamanAI >= 2) skor += 100000;
+  skor += ancamanAI * 40000;
 
-  // Jika Human punya ancaman (Must-Block)
-  if (ancamanHuman === 1) skor -= 40000;
-  // Jika Human berhasil melakukan Garpu ke AI
-  if (ancamanHuman >= 2) skor -= 90000;
+  // Memakai fungsi pembantu pembaca nilai yang aman agar bebas dari typo ReferenceError
+  skor -= unconAncamanHuman(ancamanHuman) * 350000;
 
   // ========================================================
   // PILAR 3: MATERIAL, POSISI, & KONEKTIVITAS
@@ -269,44 +273,44 @@ function evaluasiBoard(board) {
       if (cell === null) continue;
 
       if (cell.color === aiColor) {
-        skor += 5;
+        skor += 10;
 
         if (cell.isYugo) {
-          aiYugos++;
-          skor += 200;
-          const jarakTengah = Math.abs(r - 3.5) + Math.abs(c - 3.5);
-          skor += (7 - jarakTengah) * 15;
+          const bobotSimbol = parseInt(cell.jumlahArahYugo) || 1;
+          aiYugos += bobotSimbol;
+
+          skor += 300 * bobotSimbol;
+          skor += nilaiKontrolTengah(r, c) * 5;
         } else {
           if (inOpening) skor += evaluasiFaseOpening(r, c);
           else {
-            const jarakTengah = Math.abs(r - 3.5) + Math.abs(c - 3.5);
-            skor += (7 - jarakTengah) * 3;
+            skor += nilaiKontrolTengah(r, c) * 2;
           }
         }
 
         // Panggil helper konektivitas linear yang baru (Menggantikan hitungTetangga biasa)
-        skor += evaluasiKonektivitasLinear(board, r, c, aiColor) * 20;
+        skor += evaluasiKonektivitasLinear(board, r, c, aiColor) * 15;
       } else {
-        skor -= 5;
+        skor -= 10;
         if (cell.isYugo) {
-          humanYugos++;
-          skor -= 250;
-          const jarakTengah = Math.abs(r - 3.5) + Math.abs(c - 3.5);
-          skor -= (7 - jarakTengah) * 15;
+          const bobotSimbolMusuh = parseInt(cell.jumlahArahYugo) || 1;
+          humanYugos += bobotSimbolMusuh;
+
+          skor -= 350 * bobotSimbolMusuh;
+          skor -= nilaiKontrolTengah(r, c) * 5;
         } else {
           if (inOpening) skor -= evaluasiFaseOpening(r, c);
           else {
-            const jarakTengah = Math.abs(r - 3.5) + Math.abs(c - 3.5);
-            skor -= (7 - jarakTengah) * 3;
+            skor -= nilaiKontrolTengah(r, c) * 2;
           }
         }
 
-        skor -= evaluasiKonektivitasLinear(board, r, c, humanColor) * 20;
+        skor -= evaluasiKonektivitasLinear(board, r, c, humanColor) * 15;
       }
     }
   }
 
-  skor += (aiYugos - humanYugos) * 500;
+  skor += (aiYugos - humanYugos) * 1000;
 
   // ========================================================
   // PILAR 4: MOBILITAS (MENCEGAH WEGO LOSS)
@@ -319,9 +323,14 @@ function evaluasiBoard(board) {
     board,
     humanColor,
   ).length;
-  skor += (langkahLegalAI - langkahLegalHuman) * 10;
+  skor += (langkahLegalAI - langkahLegalHuman) * 20;
 
   return skor;
+}
+
+// Tambahkan satu fungsi pembantu kecil ini tepat di bawah fungsi evaluasiBoard Anda:
+function unconAncamanHuman(nilai) {
+  return parseInt(nilai) || 0;
 }
 
 // HELPER 1: DETEKSI ANCAMAN IGO & DPA (Mencari 3 Yugo + 1 Kosong)
@@ -339,7 +348,7 @@ function deteksiAncamanIgo(board, color) {
     for (let c = 0; c < 8; c++) {
       for (let [dr, dc] of arah) {
         let yugoCount = 0;
-        let emptyCount = 0;
+        let empty = null;
         let validWindow = true;
 
         // Mengecek "jendela" ukuran 4 petak
@@ -355,7 +364,7 @@ function deteksiAncamanIgo(board, color) {
 
           let cell = board[nr][nc];
           if (cell === null) {
-            emptyCount++;
+            empty = { row: nr, col: nc };
           } else if (cell.color === color && cell.isYugo) {
             yugoCount++;
           } else {
@@ -366,8 +375,13 @@ function deteksiAncamanIgo(board, color) {
         }
 
         // Jika dalam 4 petak ada persis 3 Yugo dan 1 Kosong = ANCAMAN FATAL!
-        if (validWindow && yugoCount === 3 && emptyCount === 1) {
-          jumlahAncaman++;
+        if (validWindow && yugoCount === 3 && empty !== null) {
+          // Validasi tambahan: Pastikan jika diisi di petak kosong tersebut, ia benar-benar memicu Yugo/Igo
+          if (
+            apakahLangkahLegalUntukBoard(board, empty.row, empty.col, color)
+          ) {
+            jumlahAncaman++;
+          }
         }
       }
     }
@@ -432,7 +446,11 @@ function deteksiIgo(board, color) {
 
           if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
             let cell = board[nr][nc];
-            if (cell !== null && cell.color === color && cell.isYugo) {
+            if (
+              cell !== null &&
+              cell.color === color &&
+              (cell.isYugo || cell.jumlahArahYugo > 0)
+            ) {
               yugoCount++;
             } else {
               break; // Terputus, bukan Igo
@@ -474,6 +492,14 @@ function jalankanLangkahSimulasi(board, row, col, color) {
     jumlahArahYugo: 0,
     migosTerhapus: [],
   };
+
+  // 1. Validasi aturan legalitas sebelum memproses Yugo simulasi
+  // Jika langkah ini ternyata membuat Long Line (>4) tanpa membuat Yugo di arah lain,
+  // maka langkah ini ilegal. Langsung hapus bidak dari board simulasi!
+  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
+    board[row][col] = null;
+    return; // Keluar dari fungsi, simulasi langkah digagalkan
+  }
 
   const hasilYugo = cekYugoSimulasi(board, row, col, color);
 
@@ -607,8 +633,9 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
   let adaYugoSah = false;
   let adaLongLine = false;
 
-  arah.forEach((pasangArah) => {
+  for (const pasangArah of arah) {
     let hitungBidak = 1;
+    let hitungYugoLama = 0; // Deklarasikan variabel hitungYugoLama di sini
 
     pasangArah.forEach(([dr, dc]) => {
       let r = row + dr;
@@ -623,6 +650,12 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
         board[r][c].color === color
       ) {
         hitungBidak++;
+
+        // Hitung jumlah Yugo fisik yang sudah berdiri di jalur ini
+        if (board[r][c].isYugo) {
+          hitungYugoLama++;
+        }
+
         r += dr;
         c += dc;
       }
@@ -632,10 +665,12 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
       adaYugoSah = true;
     }
 
-    if (hitungBidak > 4) {
-      adaLongLine = true;
+    // Jika total barisan melebihi 4, atau menempel di jalur yang sudah berisi 4 Yugo,
+    // MAKA petak ini MUTLAK ILLEGAL untuk ditempati. Langsung kembalikan false di tempat!
+    if (hitungBidak > 4 || hitungYugoLama >= 4) {
+      return false;
     }
-  });
+  }
 
   if (adaLongLine && !adaYugoSah) {
     return false;

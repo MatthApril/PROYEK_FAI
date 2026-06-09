@@ -261,6 +261,11 @@ function handleKlikKotak(row, col, dariAI = false) {
   updateDisplayWaktu();
   renderBoard();
 
+  // === Evaluasi kondisi Wego Papan Penuh sebelum AI berjalan ===
+  if (cekWegoPenuh()) {
+    return; // Stop eksekusi jika game sudah berakhir secara Wego
+  }
+
   // 7. JALANKAN LOGIKA AI - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
   if (
     modeLawan !== "Local Play" &&
@@ -785,7 +790,7 @@ function akhiriGame(pesan) {
   btnGame.classList.add("btn-success");
 
   // 5. Saat game selesai, default-nya tampilkan config panel
-  switchPanels();
+  // switchPanels();
 }
 
 function resetPapan() {
@@ -1187,10 +1192,40 @@ if (btnCopy) {
   });
 }
 
-// const btnUndo = document.getElementById("btnUndo");
+// === TAMBAHAN FUNGSI BARU UNTUK DETEKSI WEGO (64 KOTAK PENUH) ===
+function cekWegoPenuh() {
+  let kotakTerisi = 0;
 
-// if (btnUndo) {
-//   btnUndo.addEventListener("click", function () {
-//     undo();
-//   });
-// }
+  // Hitung jumlah bidak yang ada di atas virtual board
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (gameState.board[r][c] !== null) {
+        kotakTerisi++;
+      }
+    }
+  }
+
+  // Jika seluruh 64 petak sudah terisi penuh, jalankan evaluasi pemenang Wego
+  if (kotakTerisi === 64) {
+    const yugoPutih = gameState.yugo.white;
+    const yugoHitam = gameState.yugo.black;
+
+    let pesanWego = "";
+
+    if (yugoPutih > yugoHitam) {
+      pesanWego = "White wins a Wego!";
+    } else if (yugoHitam > yugoPutih) {
+      pesanWego = "Black wins a Wego!";
+    } else {
+      pesanWego = "The game is drawn!";
+    }
+
+    // Picu kemunculan modal akhir game dengan pesan penentu skor akhir
+    setTimeout(() => {
+      akhiriGame(pesanWego);
+    }, 2000);
+
+    return true;
+  }
+  return false;
+}

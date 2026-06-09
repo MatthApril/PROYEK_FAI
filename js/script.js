@@ -245,6 +245,7 @@ function handleKlikKotak(row, col, dariAI = false) {
   });
 
   // 6. PERALIHAN TURN & TIMER INCREMENT
+
   if (gameState.currentPlayer === "white") {
     if (cekTimer.checked) waktuDetikPutih += nilaiIncrement;
     gameState.currentPlayer = "black";

@@ -151,7 +151,14 @@ function jalankanAI() {
     aiSedangBerpikir = false;
     aiTimeoutId = null;
 
-    handleKlikKotak(langkahTerbaik.row, langkahTerbaik.col, true);
+    // perbaikan bug : biar ngga lemot dan krn belum ada fallback jadi kalau langkah terbaiknya null (misal karena semua langkah ilegal), maka ambil langkah legal pertama aja, jadi ngga error dan AI tetap jalan
+    // handleKlikKotak(langkahTerbaik.row, langkahTerbaik.col, true);
+    if (langkahTerbaik) {
+      handleKlikKotak(langkahTerbaik.row, langkahTerbaik.col, true);
+    } else {
+      const fallback = langkahLegal[0];
+      handleKlikKotak(fallback.row, fallback.col, true);
+    }
   }, 500);
 }
 
@@ -226,7 +233,7 @@ function cariLangkahIgoLangsung(board, color) {
     return b.nilaiTengah - a.nilaiTengah;
   });
 
-  console.log("KANDIDAT IGO LANGSUNG", color, kandidat);
+  // console.log("KANDIDAT IGO LANGSUNG", color, kandidat);
 
   return kandidat[0] || null;
 }
@@ -473,15 +480,15 @@ function evaluasiBoard(board) {
   // ========================================================
   // PILAR 4: MOBILITAS (MENCEGAH WEGO LOSS)
   // ========================================================
-  const langkahLegalAI = ambilSemuaLangkahLegalUntukBoard(
-    board,
-    aiColor,
-  ).length;
-  const langkahLegalHuman = ambilSemuaLangkahLegalUntukBoard(
-    board,
-    humanColor,
-  ).length;
-  skor += (langkahLegalAI - langkahLegalHuman) * 20;
+  // const langkahLegalAI = ambilSemuaLangkahLegalUntukBoard(
+  //   board,
+  //   aiColor,
+  // ).length;
+  // const langkahLegalHuman = ambilSemuaLangkahLegalUntukBoard(
+  //   board,
+  //   humanColor,
+  // ).length;
+  // skor += (langkahLegalAI - langkahLegalHuman) * 20;
 
   return skor;
 }

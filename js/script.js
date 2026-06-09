@@ -2,7 +2,6 @@
 // 1. INITIAL SETUP & STATE MANAGEMENT
 // ==========================================
 
-const pilihanMusuh = document.getElementById("pilihanMusuh");
 const cekTimer = document.getElementById("cekTimer");
 const waktuPutih = document.querySelectorAll(".waktu-putih");
 const waktuHitam = document.querySelectorAll(".waktu-hitam");
@@ -13,7 +12,7 @@ const infoPutih = document.getElementById("info-putih");
 const infoHitam = document.getElementById("info-hitam");
 const papanGame = document.getElementById("papanGame");
 const moveHistory = document.getElementById("moveHistory"); // Textarea Move History
-const btnGame = document.getElementById("startGame");
+const btnGame = document.getElementById("btnStart");
 const configPanel = document.getElementById("config-panel");
 const historyPanel = document.getElementById("history-panel");
 const btnCopy = document.getElementById("btnCopy");
@@ -41,6 +40,29 @@ let historyStack = []; // Menyimpan tumpukan memori setiap langkah untuk multi-u
 
 // Array konversi index kolom ke Huruf Notasi Catur
 const indeksKeHuruf = ["a", "b", "c", "d", "e", "f", "g", "h"];
+
+// State untuk Mode Permainan (AI)
+const pilihanMusuh = document.getElementById("pilihanMusuh"); // Dropdown pilihan mode lawan (Local Play, AI Beginner, dst)
+let modeLawan = "Local Play"; // Default mode, akan diupdate saat Start Game ditekan berdasarkan pilihan dropdown
+let aiColor = "black";
+let humanColor = "white";
+let aiSedangBerpikir = false; // Flag untuk menandai apakah AI sedang dalam proses berpikir
+let aiTimeoutId = null; // untuk menyimpan ID timeout AI agar bisa dibatalkan jika diperlukan
+
+// Fungsi untuk menampilkan/menyembunyikan panel AI Settings berdasarkan pilihan opponent
+function toggleAISettings() {
+  const panel = document.getElementById("aiSettingsPanel");
+  if (pilihanMusuh.value === "Artificial Intelligence") {
+    panel.style.display = "block";
+  } else {
+    panel.style.display = "none";
+  }
+}
+
+// Fungsi untuk update label angka depth saat slider digeser
+function updateDepthLabel(value) {
+  document.getElementById("depthLabel").textContent = value;
+}
 
 // ==========================================
 // 2. LOGIKA GENERATE & RENDER BOARD
@@ -149,16 +171,19 @@ function renderBoard() {
 // ==========================================
 
 function handleKlikKotak(row, col, dariAI = false) {
+  // tambahan parameter dariAI untuk membedakan klik manual vs AI
   if (gameState.gameStatus !== "active") {
     tampilkanAlert("gagal", "Gagal!", "Silahkan mulai game terlebih dahulu!");
     return;
   }
 
+  // Jika mode lawan adalah AI, pastikan hanya giliran manusia yang bisa melakukan klik manual
   if (
-    !dariAI &&
-    pilihanMusuh.value !== "Local Play" &&
-    gameState.currentPlayer === aiColor
+    modeLawan !== "Local Play" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
   ) {
+    tampilkanAlert("gagal", "Gagal!", "Sekarang giliran AI!");
     return;
   }
 
@@ -223,35 +248,32 @@ function handleKlikKotak(row, col, dariAI = false) {
   if (gameState.currentPlayer === "white") {
     if (cekTimer.checked) waktuDetikPutih += nilaiIncrement;
     gameState.currentPlayer = "black";
-    infoPutih.classList.remove("bg-primary");
-    infoHitam.classList.add("bg-primary");
+    infoPutih.classList.remove("bg-success");
+    infoHitam.classList.add("bg-success");
   } else {
     if (cekTimer.checked) waktuDetikHitam += nilaiIncrement;
     gameState.currentPlayer = "white";
-    infoHitam.classList.remove("bg-primary");
-    infoPutih.classList.add("bg-primary");
+    infoHitam.classList.remove("bg-success");
+    infoPutih.classList.add("bg-success");
   }
 
   // 5. UPDATE TAMPILAN LAYAR
   updateDisplayWaktu();
   renderBoard();
 
-  cekGiliranAI();
-}
+  // === Evaluasi kondisi Wego Papan Penuh sebelum AI berjalan ===
+  if (cekWegoPenuh()) {
+    return; // Stop eksekusi jika game sudah berakhir secara Wego
+  }
 
-function cekGiliranAI() {
-  if (gameState.gameStatus !== "active") return;
-  if (aiSedangBerpikir) return;
-
-  const modeMusuh = pilihanMusuh.value;
-
-  // AI hanya jalan sebagai black
-  if (gameState.currentPlayer !== aiColor) return;
-
-  if (modeMusuh === "AI - Beginner") {
-    jalankanAIBeginner();
-  } else if (modeMusuh === "AI - Novice") {
-    jalankanAINovice();
+  // 7. JALANKAN LOGIKA AI - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
+  if (
+    modeLawan !== "Local Play" &&
+    gameState.gameStatus === "active" &&
+    gameState.currentPlayer === aiColor &&
+    !dariAI
+  ) {
+    jalankanAI();
   }
 }
 
@@ -348,11 +370,11 @@ function undo() {
 
   // Sesuaikan indikator background giliran aktif di layar
   if (warnaTerakhir === "white") {
-    infoHitam.classList.remove("bg-primary");
-    infoPutih.classList.add("bg-primary");
+    infoHitam.classList.remove("bg-success");
+    infoPutih.classList.add("bg-success");
   } else {
-    infoPutih.classList.remove("bg-primary");
-    infoHitam.classList.add("bg-primary");
+    infoPutih.classList.remove("bg-success");
+    infoHitam.classList.add("bg-success");
   }
 
   // 8. Bersihkan riwayat langkah terakhir di Textarea Move History
@@ -490,6 +512,9 @@ function startGame() {
   }
 
   resetPapan();
+
+  modeLawan = pilihanMusuh.value; // Ambil mode lawan yang dipilih di dropdown saat Start Game ditekan
+
   gameState.gameStatus = "active";
   switchPanels();
   moveHistory.value = ""; // Reset papan history teks
@@ -506,7 +531,7 @@ function startGame() {
     waktuDetikPutih = menitPilihan * 60;
     waktuDetikHitam = menitPilihan * 60;
 
-    infoPutih.classList.add("bg-primary");
+    infoPutih.classList.add("bg-success");
     updateDisplayWaktu();
     mulaiIntervalTimer();
   }
@@ -765,7 +790,7 @@ function akhiriGame(pesan) {
   btnGame.classList.add("btn-success");
 
   // 5. Saat game selesai, default-nya tampilkan config panel
-  switchPanels();
+  // switchPanels();
 }
 
 function resetPapan() {
@@ -785,19 +810,16 @@ function resetPapan() {
   clearInterval(timerIntervalId);
   timerIntervalId = null;
 
+  clearTimeout(aiTimeoutId);
+  aiTimeoutId = null;
   aiSedangBerpikir = false;
-
-  if (aiTimeoutId !== null) {
-    clearTimeout(aiTimeoutId);
-    aiTimeoutId = null;
-  }
 
   const menitPilihan = parseInt(menit.value);
   waktuDetikPutih = menitPilihan * 60;
   waktuDetikHitam = menitPilihan * 60;
 
-  infoPutih.classList.remove("bg-primary");
-  infoHitam.classList.remove("bg-primary");
+  infoPutih.classList.remove("bg-success");
+  infoHitam.classList.remove("bg-success");
   moveHistory.value = "";
   nomorLangkah = 1;
 
@@ -868,6 +890,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Bersihkan papan terlebih dahulu sebelum melakukan rekonstruksi data
       resetPapan();
 
+      // Ambil mode lawan dari dropdown agar import mempertimbangkan pemilihan opponent
+      modeLawan = pilihanMusuh.value;
+
       // DETEKSI FORMAT: Jika mengandung tanda kunci titik dua (:), maka dibaca sebagai Position String
       if (input.includes("WM:") || input.includes("START:")) {
         eksekusiImportPositionString(input);
@@ -875,6 +900,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Jika tidak, diasumsikan sebagai urutan baris Move History (Notasi Catur)
         eksekusiImportMoveHistory(input);
       }
+
+      cekTimer.checked = false;
+      aturTimer();
+
+      // Update tombol Start menjadi Resign karena game sekarang aktif
+      btnGame.textContent = "Resign";
+      btnGame.classList.remove("btn-success");
+      btnGame.classList.add("btn-dark");
 
       // Tutup modal bootstrap secara terprogram setelah berhasil diproses
       const modalImport = document.getElementById("importModal");
@@ -885,6 +918,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Bersihkan form input untuk penggunaan berikutnya
       teksInputImport.value = "";
+
+      // Jika mode lawan AI dan giliran sekarang adalah AI, langsung jalankan AI
+      if (
+        modeLawan !== "Local Play" &&
+        gameState.gameStatus === "active" &&
+        gameState.currentPlayer === aiColor
+      ) {
+        jalankanAI();
+      }
     });
   }
 });
@@ -961,11 +1003,11 @@ function eksekusiImportPositionString(str) {
 
     // Sesuaikan panel indikator giliran aktif sesuai data START
     if (gameState.currentPlayer === "white") {
-      infoHitam.classList.remove("bg-primary");
-      infoPutih.classList.add("bg-primary");
+      infoHitam.classList.remove("bg-success");
+      infoPutih.classList.add("bg-success");
     } else {
-      infoPutih.classList.remove("bg-primary");
-      infoHitam.classList.add("bg-primary");
+      infoPutih.classList.remove("bg-success");
+      infoHitam.classList.add("bg-success");
     }
 
     gameState.gameStatus = "active";
@@ -1094,11 +1136,11 @@ function eksekusiImportMoveHistory(str) {
 
     // Set latar belakang indikator turn saat ini
     if (gameState.currentPlayer === "white") {
-      infoHitam.classList.remove("bg-primary");
-      infoPutih.classList.add("bg-primary");
+      infoHitam.classList.remove("bg-success");
+      infoPutih.classList.add("bg-success");
     } else {
-      infoPutih.classList.remove("bg-primary");
-      infoHitam.classList.add("bg-primary");
+      infoPutih.classList.remove("bg-success");
+      infoHitam.classList.add("bg-success");
     }
 
     // Sinkronisasi ulang tampilan angka fisik Yugo ke panel info HTML
@@ -1133,6 +1175,7 @@ if (btnCopy) {
       return;
     }
 
+    tampilkanAlert("sukses", "Sukses!", "Move history copied to clipboard.");
     // Menggunakan Navigator Clipboard API modern untuk menyalin string teks
     navigator.clipboard.writeText(teksHistory).catch((err) => {
       // Fallback jika browser memblokir akses clipboard API karena masalah izin/HTTPS
@@ -1149,10 +1192,40 @@ if (btnCopy) {
   });
 }
 
-const btnUndo = document.getElementById("btnUndo");
+// === TAMBAHAN FUNGSI BARU UNTUK DETEKSI WEGO (64 KOTAK PENUH) ===
+function cekWegoPenuh() {
+  let kotakTerisi = 0;
 
-if (btnUndo) {
-  btnUndo.addEventListener("click", function () {
-    undo();
-  });
+  // Hitung jumlah bidak yang ada di atas virtual board
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (gameState.board[r][c] !== null) {
+        kotakTerisi++;
+      }
+    }
+  }
+
+  // Jika seluruh 64 petak sudah terisi penuh, jalankan evaluasi pemenang Wego
+  if (kotakTerisi === 64) {
+    const yugoPutih = gameState.yugo.white;
+    const yugoHitam = gameState.yugo.black;
+
+    let pesanWego = "";
+
+    if (yugoPutih > yugoHitam) {
+      pesanWego = "White wins a Wego!";
+    } else if (yugoHitam > yugoPutih) {
+      pesanWego = "Black wins a Wego!";
+    } else {
+      pesanWego = "The game is drawn!";
+    }
+
+    // Picu kemunculan modal akhir game dengan pesan penentu skor akhir
+    setTimeout(() => {
+      akhiriGame(pesanWego);
+    }, 2000);
+
+    return true;
+  }
+  return false;
 }

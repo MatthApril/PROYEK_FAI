@@ -14,10 +14,26 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 15% 20%, rgba(122, 186, 88, 0.28) 0%, transparent 18%),
-    radial-gradient(circle at 85% 18%, rgba(94, 160, 70, 0.24) 0%, transparent 20%),
-    radial-gradient(circle at 30% 75%, rgba(52, 112, 48, 0.22) 0%, transparent 22%),
-    radial-gradient(circle at 75% 70%, rgba(30, 86, 38, 0.22) 0%, transparent 24%),
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(122, 186, 88, 0.28) 0%,
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 85% 18%,
+      rgba(94, 160, 70, 0.24) 0%,
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 30% 75%,
+      rgba(52, 112, 48, 0.22) 0%,
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 75% 70%,
+      rgba(30, 86, 38, 0.22) 0%,
+      transparent 24%
+    ),
     linear-gradient(180deg, #4f8f4b 0%, #2f6a35 35%, #1e4d29 65%, #12321d 100%);
   background-attachment: fixed;
   background-size: cover;
@@ -34,8 +50,16 @@ body::before {
   background:
     radial-gradient(ellipse at top left, rgba(0, 0, 0, 0.18), transparent 40%),
     radial-gradient(ellipse at top right, rgba(0, 0, 0, 0.16), transparent 42%),
-    radial-gradient(ellipse at bottom left, rgba(0, 0, 0, 0.22), transparent 45%),
-    radial-gradient(ellipse at bottom right, rgba(0, 0, 0, 0.2), transparent 45%),
+    radial-gradient(
+      ellipse at bottom left,
+      rgba(0, 0, 0, 0.22),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      rgba(0, 0, 0, 0.2),
+      transparent 45%
+    ),
     repeating-linear-gradient(
       115deg,
       transparent 0px,
@@ -52,12 +76,36 @@ body::after {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 180px 90px at 8% 10%, rgba(45, 110, 50, 0.28) 0%, transparent 70%),
-    radial-gradient(ellipse 220px 110px at 22% 6%, rgba(38, 94, 44, 0.24) 0%, transparent 72%),
-    radial-gradient(ellipse 200px 100px at 80% 8%, rgba(51, 120, 58, 0.25) 0%, transparent 72%),
-    radial-gradient(ellipse 180px 90px at 94% 14%, rgba(30, 84, 38, 0.26) 0%, transparent 70%),
-    radial-gradient(ellipse 220px 110px at 12% 92%, rgba(35, 88, 42, 0.22) 0%, transparent 72%),
-    radial-gradient(ellipse 220px 110px at 88% 90%, rgba(33, 82, 40, 0.22) 0%, transparent 72%);
+    radial-gradient(
+      ellipse 180px 90px at 8% 10%,
+      rgba(45, 110, 50, 0.28) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 220px 110px at 22% 6%,
+      rgba(38, 94, 44, 0.24) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 200px 100px at 80% 8%,
+      rgba(51, 120, 58, 0.25) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 180px 90px at 94% 14%,
+      rgba(30, 84, 38, 0.26) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 220px 110px at 12% 92%,
+      rgba(35, 88, 42, 0.22) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 220px 110px at 88% 90%,
+      rgba(33, 82, 40, 0.22) 0%,
+      transparent 72%
+    );
   z-index: -1;
 }
 
@@ -68,8 +116,16 @@ body::after {
 .konten {
   background:
     linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
-    radial-gradient(circle at top left, rgba(138, 191, 94, 0.12), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(24, 82, 41, 0.16), transparent 35%);
+    radial-gradient(
+      circle at top left,
+      rgba(138, 191, 94, 0.12),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(24, 82, 41, 0.16),
+      transparent 35%
+    );
 }
 
 .logo-besar img {
@@ -213,14 +269,13 @@ body::after {
 
 .kotak:hover {
   transform: translateY(-1px);
-  background:
-    linear-gradient(
-      135deg,
-      #b4df79 0%,
-      #8dc457 35%,
-      #6ca340 65%,
-      #588b31 100%
-    );
+  background: linear-gradient(
+    135deg,
+    #b4df79 0%,
+    #8dc457 35%,
+    #6ca340 65%,
+    #588b31 100%
+  );
 
   box-shadow:
     inset 1px 1px 0 rgba(255, 255, 255, 0.2),
@@ -614,6 +669,127 @@ textarea {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 18px;
+}
+
+/* ===== AI SETTINGS PANEL ===== */
+.ai-settings-panel {
+  background: #fcf6f0;
+  border: 2px solid #e8e0d0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-settings-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #26384b;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d0dce8;
+}
+
+.ai-setting-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.ai-setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.ai-setting-row label {
+  font-weight: 500;
+  color: #3a4f63;
+}
+
+.ai-label-off,
+.ai-label-on {
+  font-size: 12px;
+  font-weight: 600;
+  color: #607080;
+}
+
+/* Alpha-Beta toggle — reuse .toggle pattern */
+#toggleAlphaBeta {
+  display: none;
+}
+
+.toggle-ab {
+  width: 44px;
+  height: 23px;
+  background: #28e761;
+  border-radius: 20px;
+  padding: 3px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.toggle-ab span {
+  display: block;
+  width: 17px;
+  height: 17px;
+  background: white;
+  border-radius: 50%;
+  transform: translateX(21px);
+  transition: 0.25s;
+}
+
+#toggleAlphaBeta:not(:checked) + .toggle-ab {
+  background: #ff4b4b;
+}
+
+#toggleAlphaBeta:not(:checked) + .toggle-ab span {
+  transform: translateX(0);
+}
+
+/* Depth slider */
+.depth-control {
+  width: 100%;
+}
+
+.depth-slider {
+  flex: 1;
+  accent-color: #26384b;
+}
+
+.depth-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  background: #26384b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+/* ===== IMPORT BUTTON ===== */
+.import {
+  width: 100%;
+  padding: 14px 8px;
+  background: #0fa7bb;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
 }
 
 /* ========================= */

@@ -183,26 +183,18 @@ function yugo(row, col, color) {
     });
 
     // ATURAN GAME: Jika terbentuk minimal 4 bidak searah (sesuaikan angka 4 ini dengan mekanik aslinya)
-    if (hitungBidak === 4) {
+    if (hitungBidak >= 4) {
       yugo = true;
-      jumlahMigoSejajar++;
+      jumlahMigoSejajar++; // Tambah jumlah arah yang terhubung aktif!
 
-      migos = migos.concat(koordinatMigo);
-    } else if (hitungBidak > 4) {
-      // LEBIH DARI 4 BIDAK SEJAJAR -> Menandai adanya Long Line ilegal di jalur ini
-      longLines = true;
+      // Masukkan migo biasa ke daftar penghapusan papan
+      koordinatMigo.forEach((koor) => {
+        if (!migos.some((m) => m.r === koor.r && m.c === koor.c)) {
+          migos.push(koor);
+        }
+      });
     }
   });
-
-  // KONDISI KHUSUS BLOKIR: Jika langkah tersebut memicu Long Line DAN tidak menghasilkan Yugo sama sekali di arah lain
-  if (longLines && !yugo) {
-    tampilkanAlert(
-      "gagal",
-      "Gagal!",
-      "Illegal move. You may not create a line longer than 4 of your own color",
-    );
-    return -1; // Kembalikan kode -1 agar handleKlikKotak membatalkan turn
-  }
 
   if (yugo) {
     // 1. Ubah bidak terakhir yang ditekan menjadi Yugo
@@ -212,6 +204,7 @@ function yugo(row, col, color) {
     gameState.scores[color] += jumlahMigoSejajar; // Tambahkan skor sesuai jumlah Yugo
     // Fisik Bidak Yugo HANYA bertambah 1, apa pun bentuk simbolnya
     gameState.yugo[color] += 1;
+
     // Menentukan jenisYugo berdasarkan total jumlah arah garis yang terbentuk (1 sampai 4)
     let jenisBentuk = "standar";
     if (jumlahMigoSejajar === 2) {

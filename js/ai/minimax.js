@@ -1,6 +1,8 @@
 // js/ai/minimax.js
 
 let totalNodeDievaluasi = 0;
+// CACHE EVALUASI: Menyimpan hasil evaluasi board yang sudah pernah dihitung agar tidak dihitung ulang
+const evaluasiCache = new Map();
 
 function jalankanAI() {
   aiSedangBerpikir = true;
@@ -11,7 +13,10 @@ function jalankanAI() {
   let depth = elemenDepth ? parseInt(elemenDepth.value) : 2;
 
   aiTimeoutId = setTimeout(() => {
-    const langkahLegal = ambilSemuaLangkahLegalUntukBoard(gameState.board, aiColor);
+    const langkahLegal = ambilSemuaLangkahLegalUntukBoard(
+      gameState.board,
+      aiColor,
+    );
 
     if (langkahLegal.length === 0) {
       akhiriGame("AI tidak memiliki langkah legal. White wins!");
@@ -28,8 +33,19 @@ function jalankanAI() {
       return;
     }
 
-    const igoLangsungHuman = cariLangkahIgoLangsung(gameState.board, humanColor);
-    if (igoLangsungHuman && apakahLangkahLegalUntukBoard(gameState.board, igoLangsungHuman.row, igoLangsungHuman.col, aiColor)) {
+    const igoLangsungHuman = cariLangkahIgoLangsung(
+      gameState.board,
+      humanColor,
+    );
+    if (
+      igoLangsungHuman &&
+      apakahLangkahLegalUntukBoard(
+        gameState.board,
+        igoLangsungHuman.row,
+        igoLangsungHuman.col,
+        aiColor,
+      )
+    ) {
       aiSedangBerpikir = false;
       handleKlikKotak(igoLangsungHuman.row, igoLangsungHuman.col, true);
       return;
@@ -42,37 +58,71 @@ function jalankanAI() {
 
     const waktuMulai = performance.now();
     totalNodeDievaluasi = 0;
+    evaluasiCache.clear(); // Bersihkan cache di setiap turn baru AI
 
-    langkahLegal.forEach((langkah) => {
-      const boardSimulasi = cloneBoard(gameState.board);
-      const sukses = jalankanLangkahSimulasi(boardSimulasi, langkah.row, langkah.col, aiColor);
+    // === OPTIMASI MOVE ORDERING LEVEL UTAMA ===
+    urutkanLangkah(gameState.board, langkahLegal, aiColor);
 
-      if (!sukses) return;
+    // Gunakan kloning papan hanya sekali di tingkat teratas (Root) untuk keamanan data utama game
+    const boardPencarian = cloneBoardFast(gameState.board);
+
+    const totalLangkah = langkahLegal.length;
+    for (let i = 0; i < langkahLegal.length; i++) {
+      const langkah = langkahLegal[i];
+
+      // Simpan state asli petak sebelum dimodifikasi untuk keperluan rollback
+      const backupCell = boardPencarian[langkah.row][langkah.col];
+      const dataYugo = jalankanLangkahInPlace(
+        boardPencarian,
+        langkah.row,
+        langkah.col,
+        aiColor,
+      );
+
+      if (dataYugo.ilegal) {
+        boardPencarian[langkah.row][langkah.col] = backupCell;
+        continue;
+      }
 
       let skor;
       if (gunakanAlphaBeta) {
-        skor = minimaxAlphaBeta(boardSimulasi, depth - 1, alpha, beta, false);
+        skor = minimaxAlphaBeta(boardPencarian, depth - 1, alpha, beta, false);
         alpha = Math.max(alpha, skor);
       } else {
-        skor = minimaxMurni(boardSimulasi, depth - 1, false);
+        skor = minimaxMurni(boardPencarian, depth - 1, false);
       }
+
+      // Rollback status papan kembali ke posisi semula (Backtrack)
+      kembalikanLangkahInPlace(
+        boardPencarian,
+        langkah.row,
+        langkah.col,
+        backupCell,
+        dataYugo,
+        aiColor,
+      );
 
       // Tie-breaker: Jika skor sama, pilih yang paling menguasai tengah
       if (skor > skorTerbaik) {
         skorTerbaik = skor;
         langkahTerbaik = langkah;
       } else if (skor === skorTerbaik && langkahTerbaik !== null) {
-        if (nilaiKontrolTengah(langkah.row, langkah.col) > nilaiKontrolTengah(langkahTerbaik.row, langkahTerbaik.col)) {
+        if (
+          nilaiKontrolTengah(langkah.row, langkah.col) >
+          nilaiKontrolTengah(langkahTerbaik.row, langkahTerbaik.col)
+        ) {
           langkahTerbaik = langkah;
         }
       }
-    });
+    }
 
     const waktuSelesai = performance.now();
     const durasiBerpikir = waktuSelesai - waktuMulai;
     const namaAlgoritma = gunakanAlphaBeta ? "Alpha-Beta" : "Pure Minimax";
 
-    console.log(`[${namaAlgoritma}] Depth: ${depth} | Node: ${totalNodeDievaluasi} | Waktu: ${durasiBerpikir.toFixed(2)} ms`);
+    console.log(
+      `[${namaAlgoritma}] Depth: ${depth} | Node: ${totalNodeDievaluasi} | Waktu: ${durasiBerpikir.toFixed(2)} ms`,
+    );
 
     aiSedangBerpikir = false;
     aiTimeoutId = null;
@@ -82,7 +132,7 @@ function jalankanAI() {
     } else {
       handleKlikKotak(langkahLegal[0].row, langkahLegal[0].col, true); // Fallback
     }
-  }, 100); 
+  }, 100);
 }
 
 // ==========================================
@@ -90,39 +140,46 @@ function jalankanAI() {
 // ==========================================
 
 function minimaxAlphaBeta(board, depth, alpha, beta, isMaximizing) {
-  totalNodeDievaluasi++; 
-  if (depth === 0) return evaluasiBoard(board);
+  totalNodeDievaluasi++;
+
+  if (depth === 0) {
+    // CACHING LOGIC: Generate string key unik untuk posisi board saat ini
+    const key = dapatkanPapanKeyString(board);
+    if (evaluasiCache.has(key)) return evaluasiCache.get(key);
+
+    const score = evaluasiBoard(board);
+    evaluasiCache.set(key, score);
+    return score;
+  }
 
   const colorSekarang = isMaximizing ? aiColor : humanColor;
   const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, colorSekarang);
   if (langkahLegal.length === 0) return evaluasiBoard(board);
 
-  // ==========================================
-  // MOVE ORDERING: Kunci Kecepatan Alpha-Beta
-  // ==========================================
-  langkahLegal.sort((a, b) => {
-    let skorA = 0;
-    let skorB = 0;
-
-    // 1. Tebakan Murah: Prioritaskan langkah yang membentuk Yugo Langsung
-    if (apakahMembentukYugoUntukBoard(board, a.row, a.col, colorSekarang)) skorA += 1000;
-    if (apakahMembentukYugoUntukBoard(board, b.row, b.col, colorSekarang)) skorB += 1000;
-
-    // 2. Tebakan Murah: Prioritaskan penguasaan area ring/tengah
-    skorA += nilaiKontrolTengah(a.row, a.col);
-    skorB += nilaiKontrolTengah(b.row, b.col);
-
-    // Sort descending (terbesar ke terkecil)
-    return skorB - skorA;
-  });
+  // Panggil fungsi Move Ordering berkinerja tinggi
+  urutkanLangkah(board, langkahLegal, colorSekarang);
 
   if (isMaximizing) {
     let skorTerbaik = -Infinity;
     for (let i = 0; i < langkahLegal.length; i++) {
       const boardSimulasi = cloneBoard(board);
-      if (!jalankanLangkahSimulasi(boardSimulasi, langkahLegal[i].row, langkahLegal[i].col, colorSekarang)) continue;
-      
-      const skor = minimaxAlphaBeta(boardSimulasi, depth - 1, alpha, beta, false);
+      if (
+        !jalankanLangkahSimulasi(
+          boardSimulasi,
+          langkahLegal[i].row,
+          langkahLegal[i].col,
+          colorSekarang,
+        )
+      )
+        continue;
+
+      const skor = minimaxAlphaBeta(
+        boardSimulasi,
+        depth - 1,
+        alpha,
+        beta,
+        false,
+      );
       skorTerbaik = Math.max(skorTerbaik, skor);
       alpha = Math.max(alpha, skorTerbaik);
       if (beta <= alpha) break;
@@ -132,15 +189,141 @@ function minimaxAlphaBeta(board, depth, alpha, beta, isMaximizing) {
     let skorTerbaik = Infinity;
     for (let i = 0; i < langkahLegal.length; i++) {
       const boardSimulasi = cloneBoard(board);
-      if (!jalankanLangkahSimulasi(boardSimulasi, langkahLegal[i].row, langkahLegal[i].col, colorSekarang)) continue;
+      if (
+        !jalankanLangkahSimulasi(
+          boardSimulasi,
+          langkahLegal[i].row,
+          langkahLegal[i].col,
+          colorSekarang,
+        )
+      )
+        continue;
 
-      const skor = minimaxAlphaBeta(boardSimulasi, depth - 1, alpha, beta, true);
+      const skor = minimaxAlphaBeta(
+        boardSimulasi,
+        depth - 1,
+        alpha,
+        beta,
+        true,
+      );
       skorTerbaik = Math.min(skorTerbaik, skor);
       beta = Math.min(beta, skorTerbaik);
       if (beta <= alpha) break;
     }
     return skorTerbaik;
   }
+}
+
+// === ULTRAPASTE KEY GENERATOR UNTUK CACHE ===
+function dapatkanPapanKeyString(board) {
+  let key = "";
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const cell = board[r][c];
+      if (cell === null) {
+        key += "O";
+      } else {
+        key +=
+          (cell.color === "white" ? "W" : "B") +
+          (cell.isYugo ? cell.jumlahArahYugo : "M");
+      }
+    }
+  }
+  return key;
+}
+
+// === FUNGSI LOGIKA MEKANIK IN-PLACE MODIFICATION ===
+function jalankanLangkahInPlace(board, row, col, color) {
+  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
+    return { ilegal: true };
+  }
+
+  board[row][col] = {
+    color: color,
+    isYugo: false,
+    jumlahArahYugo: 0,
+    migosTerhapus: [],
+  };
+
+  const hasilYugo = cekYugoSimulasi(board, row, col, color);
+  let backupMigosData = [];
+
+  if (hasilYugo.terbentukYugo) {
+    board[row][col].isYugo = true;
+    board[row][col].jumlahArahYugo = hasilYugo.jumlahArahYugo;
+
+    let jenisBentuk = "standar";
+    if (hasilYugo.jumlahArahYugo === 2) jenisBentuk = "oval";
+    else if (hasilYugo.jumlahArahYugo === 3) jenisBentuk = "segitiga";
+    else if (hasilYugo.jumlahArahYugo === 4) jenisBentuk = "persegi";
+    board[row][col].jenisYugo = jenisBentuk;
+
+    const len = hasilYugo.migosTerhapus.length;
+    for (let i = 0; i < len; i++) {
+      const migo = hasilYugo.migosTerhapus[i];
+      // Simpan data kepingan Migo asli sebelum dihapus (ledakan Yugo) untuk keperluan pemulihan kembali
+      backupMigosData.push({
+        r: migo.r,
+        c: migo.c,
+        data: board[migo.r][migo.c],
+      });
+      board[migo.r][migo.c] = null;
+    }
+  }
+
+  return {
+    ilegal: false,
+    terbentukYugo: hasilYugo.terbentukYugo,
+    migosYangDihapus: backupMigosData,
+  };
+}
+
+// === FUNGSI UNDO LOGIKA IN-PLACE (RESTORASI DATA) ===
+function kembalikanLangkahInPlace(
+  board,
+  row,
+  col,
+  backupCell,
+  dataYugo,
+  color,
+) {
+  if (dataYugo.terbentukYugo) {
+    const len = dataYugo.migosYangDihapus.length;
+    for (let i = 0; i < len; i++) {
+      const item = dataYugo.migosYangDihapus[i];
+      board[item.r][item.c] = item.data; // Pulihkan kembali Migo biasa yang meledak
+    }
+  }
+  board[row][col] = backupCell; // Kosongkan/kembalikan koordinat penempatan utama
+}
+
+// === FUNGSI UTAMA MEMPERCEPAT PRUNING: HIGH-PERFORMANCE MOVE ORDERING ===
+function urutkanLangkah(board, langkahLegal, colorSekarang) {
+  // Hitung perkiraan bobot murah secara instan tanpa melakukan kloning penuh di dalam loop
+  for (let i = 0; i < langkahLegal.length; i++) {
+    const langkah = langkahLegal[i];
+    let bobot = 0;
+
+    // Prioritas Tinggi: Langkah yang langsung menghasilkan Yugo
+    if (
+      apakahMembentukYugoUntukBoard(
+        board,
+        langkah.row,
+        langkah.col,
+        colorSekarang,
+      )
+    ) {
+      bobot += 5000;
+    }
+
+    // Prioritas Menengah: Beri nilai berbasis posisi struktur koordinat tengah (Ring System)
+    bobot += nilaiKontrolTengah(langkah.row, langkah.col) * 10;
+
+    langkah.bobotEvaluasi = bobot;
+  }
+
+  // Pengurutan Descending cepat menggunakan properti primitif yang sudah dihitung sebelumnya
+  langkahLegal.sort((a, b) => b.bobotEvaluasi - a.bobotEvaluasi);
 }
 
 function minimaxMurni(board, depth, isMaximizing) {
@@ -198,19 +381,31 @@ function minimaxMurni(board, depth, isMaximizing) {
 }
 
 // fungsi untuk clone board agar simulasi tidak merusak board asli , jadi di rencanaain dlu pake cloneboard
-function cloneBoard(board) {
-  return board.map((row) =>
-    row.map((cell) => {
-      if (cell === null) return null;
+function cloneBoardFast(board) {
+  const newBoard = new Array(8);
+  for (let r = 0; r < 8; r++) {
+    newBoard[r] = new Array(8);
+    for (let c = 0; c < 8; c++) {
+      const cell = board[r][c];
+      if (cell === null) {
+        newBoard[r][c] = null;
+      } else {
+        newBoard[r][c] = {
+          color: cell.color,
+          isYugo: cell.isYugo,
+          jumlahArahYugo: cell.jumlahArahYugo || 0,
+          jenisYugo: cell.jenisYugo || "standar",
+          migosTerhapus: cell.migosTerhapus ? [...cell.migosTerhapus] : [],
+        };
+      }
+    }
+  }
+  return newBoard;
+}
 
-      return {
-        color: cell.color,
-        isYugo: cell.isYugo,
-        jumlahArahYugo: cell.jumlahArahYugo || 0,
-        migosTerhapus: cell.migosTerhapus ? [...cell.migosTerhapus] : [],
-      };
-    }),
-  );
+// Mempertahankan fungsi cloneBoard asli sebagai fallback jika dibutuhkan modul script lain
+function cloneBoard(board) {
+  return cloneBoardFast(board);
 }
 
 // fungsi untuk menjalankan langkah simulasi di board clone, jadi setiap langkah yang dicek di minmax itu dijalankan dulu di board clone, baru dicek hasilnya, jadi tidak merusak board asli
@@ -238,9 +433,18 @@ function jalankanLangkahSimulasi(board, row, col, color) {
     board[row][col].jumlahArahYugo = hasilYugo.jumlahArahYugo;
     board[row][col].migosTerhapus = hasilYugo.migosTerhapus;
 
-    hasilYugo.migosTerhapus.forEach((migo) => {
+    // Update jenisYugo otomatis untuk simulasi evaluasi material yang sinkron dengan penentu pemenang
+    let jenisBentuk = "standar";
+    if (hasilYugo.jumlahArahYugo === 2) jenisBentuk = "oval";
+    else if (hasilYugo.jumlahArahYugo === 3) jenisBentuk = "segitiga";
+    else if (hasilYugo.jumlahArahYugo === 4) jenisBentuk = "persegi";
+    board[row][col].jenisYugo = jenisBentuk;
+
+    const len = hasilYugo.migosTerhapus.length;
+    for (let i = 0; i < len; i++) {
+      const migo = hasilYugo.migosTerhapus[i];
       board[migo.r][migo.c] = null;
-    });
+    }
   }
 
   return true; // Langkah simulasi berhasil dijalankan
@@ -250,36 +454,33 @@ function jalankanLangkahSimulasi(board, row, col, color) {
 function cariLangkahIgoLangsung(board, color) {
   const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, color);
   const kandidat = [];
+  const totalLangkah = langkahLegal.length;
 
-  langkahLegal.forEach((langkah) => {
+  for (let i = 0; i < totalLangkah; i++) {
+    const langkah = langkahLegal[i];
     const boardSimulasi = cloneBoard(board);
 
-    const sukses = jalankanLangkahSimulasi(
-      boardSimulasi,
-      langkah.row,
-      langkah.col,
-      color,
-    );
-
-    if (!sukses) return;
+    if (
+      !jalankanLangkahSimulasi(boardSimulasi, langkah.row, langkah.col, color)
+    ) {
+      continue;
+    }
 
     if (deteksiIgo(boardSimulasi, color)) {
       kandidat.push({
         row: langkah.row,
         col: langkah.col,
-        notasi: indeksKeHuruf[langkah.col] + (8 - langkah.row),
         nilaiTengah: nilaiKontrolTengah(langkah.row, langkah.col),
       });
     }
-  });
+  }
 
-  kandidat.sort((a, b) => {
-    return b.nilaiTengah - a.nilaiTengah;
-  });
+  if (kandidat.length > 0) {
+    kandidat.sort((a, b) => b.nilaiTengah - a.nilaiTengah);
+    return kandidat[0];
+  }
 
-  // console.log("KANDIDAT IGO LANGSUNG", color, kandidat);
-
-  return kandidat[0] || null;
+  return null;
 }
 
 // fungsi untuk cek apakah langkah simulasi membentuk Yugo, ini mirip dengan cekYugo di script.js tapi ini khusus untuk simulasi di minmax, jadi tidak merubah state asli, dan juga mengembalikan informasi tambahan tentang arah Yugo dan migos yang terhapus, karena nanti itu bisa dipakai untuk evaluasi board di minimax
@@ -307,11 +508,14 @@ function cekYugoSimulasi(board, row, col, color) {
   let jumlahArahYugo = 0;
   let migosTerhapus = [];
 
-  arah.forEach((pasangArah) => {
+  for (let i = 0; i < 4; i++) {
+    const pasangArah = arah[i];
     let hitungBidak = 1;
     let koordinatMigo = [];
 
-    pasangArah.forEach(([dr, dc]) => {
+    for (let j = 0; j < 2; j++) {
+      const dr = pasangArah[j][0];
+      const dc = pasangArah[j][1];
       let r = row + dr;
       let c = col + dc;
 
@@ -332,14 +536,14 @@ function cekYugoSimulasi(board, row, col, color) {
         r += dr;
         c += dc;
       }
-    });
+    }
 
     if (hitungBidak === 4) {
       terbentukYugo = true;
       jumlahArahYugo++;
       migosTerhapus = migosTerhapus.concat(koordinatMigo);
     }
-  });
+  }
 
   return {
     terbentukYugo,

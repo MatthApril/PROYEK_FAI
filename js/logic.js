@@ -28,6 +28,7 @@ function handleKlikKotak(row, col, dariAI = false) {
   gameState.board[row][col] = {
     color: gameState.currentPlayer,
     isYugo: false, // Default taruh pertama kali selalu Migo biasa
+    jenisYugo: null,
     jumlahArahYugo: 0,
     migosTerhapus: [],
   };
@@ -74,6 +75,12 @@ function handleKlikKotak(row, col, dariAI = false) {
         ? [...cellTerupdate.migosTerhapus]
         : [],
   });
+
+  // Jika koordinat pemenang Igo terisi, artinya game SEHARUSNYA SELESAI.
+  // Jangan lanjutkan turn, jangan picu AI, langsung keluar dari fungsi saat ini juga!
+  if (igoWinningKotak.length >= 4) {
+    return;
+  }
 
   // 6. PERALIHAN TURN & TIMER INCREMENT
 
@@ -205,6 +212,16 @@ function yugo(row, col, color) {
     gameState.scores[color] += jumlahMigoSejajar; // Tambahkan skor sesuai jumlah Yugo
     // Fisik Bidak Yugo HANYA bertambah 1, apa pun bentuk simbolnya
     gameState.yugo[color] += 1;
+    // Menentukan jenisYugo berdasarkan total jumlah arah garis yang terbentuk (1 sampai 4)
+    let jenisBentuk = "standar";
+    if (jumlahMigoSejajar === 2) {
+      jenisBentuk = "oval";
+    } else if (jumlahMigoSejajar === 3) {
+      jenisBentuk = "segitiga";
+    } else if (jumlahMigoSejajar === 4) {
+      jenisBentuk = "persegi";
+    }
+    gameState.board[row][col].jenisYugo = jenisBentuk; // Simpan tipe ke cell board
 
     // 2. MEKANIK BARU: Hapus semua Migo yang sejajar dengannya dari virtual board
     migos.forEach((migo) => {
@@ -263,6 +280,7 @@ function yugo(row, col, color) {
     return jumlahMigoSejajar; // Kembalikan nilai 1
   } else {
     gameState.board[row][col].isYugo = false;
+    gameState.board[row][col].jenisYugo = null;
     gameState.board[row][col].jumlahArahYugo = 0;
     gameState.board[row][col].migosTerhapus = [];
 
@@ -286,15 +304,46 @@ function cekWegoPenuh() {
   if (kotakTerisi === 64) {
     const yugoPutih = gameState.yugo.white;
     const yugoHitam = gameState.yugo.black;
+    let skorYugoPutih = 0;
+    let skorYugoHitam = 0;
+
+    // Hitung bobot nilai Yugo dari papan langsung
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const bidak = gameState.board[r][c];
+
+        if (bidak && bidak.isYugo) {
+          // Ambil jenisYugo dari properti bidak (pastikan saat yugo terbentuk, properti jenisYugo diisi string: "standar"/"oval"/"segitiga"/"persegi")
+          // Default ke "standar" jika properti belum terdefinisi
+          const jenis =
+            bidak.jenisYugo ||
+            dapatkanTipeYugoBerdasarkanArah(bidak.jumlahArahYugo);
+          const bobotSkor = HEURISTIC_WEIGHTS.YUGO_TIERS[jenis] || 1;
+
+          if (bidak.color === "white") {
+            skorYugoPutih += bobotSkor;
+          } else if (bidak.color === "black") {
+            skorYugoHitam += bobotSkor;
+          }
+        }
+      }
+    }
 
     let pesanWego = "";
 
-    if (yugoPutih > yugoHitam) {
+    // Penentuan pemenang berdasarkan total akumulasi bobot jenis Yugo
+    if (skorYugoPutih > skorYugoHitam) {
       pesanWego = "White wins a Wego!";
-    } else if (yugoHitam > yugoPutih) {
+    } else if (skorYugoHitam > skorYugoPutih) {
       pesanWego = "Black wins a Wego!";
     } else {
-      pesanWego = "The game is drawn!";
+      if (yugoPutih > yugoHitam) {
+        pesanWego = "White wins a Wego!";
+      } else if (yugoHitam > yugoPutih) {
+        pesanWego = "Black wins a Wego!";
+      } else {
+        pesanWego = "The game is drawn!";
+      }
     }
 
     // Picu kemunculan modal akhir game dengan pesan penentu skor akhir
@@ -339,6 +388,7 @@ function undo() {
       gameState.board[migo.r][migo.c] = {
         color: warnaTerakhir,
         isYugo: false,
+        jenisYugo: null,
         jumlahArahYugo: 0,
         migosTerhapus: [],
       };
@@ -468,6 +518,14 @@ function startGame() {
 
   modeLawan = pilihanMusuh.value; // Ambil mode lawan yang dipilih di dropdown saat Start Game ditekan
 
+  if (modeLawan === "Artificial Intelligence") {
+    if (pilihanGiliran.value === "ai") {
+      aiColor = "white"; // AI jalan duluan (White)
+    } else {
+      aiColor = "black"; // User jalan duluan (White), AI menjadi Black
+    }
+  }
+
   gameState.gameStatus = "active";
   switchPanels();
   moveHistory.value = ""; // Reset papan history teks
@@ -487,6 +545,12 @@ function startGame() {
     infoPutih.classList.add("bg-success");
     updateDisplayWaktu();
     mulaiIntervalTimer();
+  }
+
+  if (modeLawan === "Artificial Intelligence" && aiColor === "white") {
+    setTimeout(() => {
+      jalankanAI();
+    }, 500); // Beri sedikit delay agar UI render awal selesai
   }
 }
 function akhiriGame(pesan) {
@@ -583,6 +647,9 @@ function resetPapan() {
   if (scoresPutih.length >= 2) scoresPutih[1].innerText = "Yugos: 0";
   if (scoresHitam.length >= 2) scoresHitam[1].innerText = "Yugos: 0";
 
+  infoHitam.classList.remove("bg-success");
+  infoPutih.classList.remove("bg-success");
+
   switchPanels();
 
   // Render ulang papan yang kosong
@@ -660,6 +727,7 @@ function eksekusiImportPositionString(str) {
               color: "white",
               isYugo: true,
               jumlahArahYugo: (notasi.match(/\*/g) || []).length || 1,
+              jenisYugo: dapatkanTipeYugoBerdasarkanArah(jumlahArah),
               migosTerhapus: [],
             };
             gameState.yugo.white++;
@@ -675,6 +743,7 @@ function eksekusiImportPositionString(str) {
               color: "black",
               isYugo: true,
               jumlahArahYugo: (notasi.match(/\*/g) || []).length || 1,
+              jenisYugo: dapatkanTipeYugoBerdasarkanArah(jumlahArah),
               migosTerhapus: [],
             };
             gameState.yugo.black++;
@@ -774,6 +843,8 @@ function eksekusiImportMoveHistory(str) {
           if (!gameState.board[pos.row][pos.col].isYugo) {
             gameState.board[pos.row][pos.col].isYugo = true;
             gameState.board[pos.row][pos.col].jumlahArahYugo = jumlahBintang;
+            gameState.board[pos.row][pos.col].jenisYugo =
+              dapatkanTipeYugoBerdasarkanArah(jumlahBintang);
 
             // Tambahkan ke statistik fisik dan skor background
             gameState.yugo[gameState.currentPlayer] += 1;
@@ -784,6 +855,8 @@ function eksekusiImportMoveHistory(str) {
               jumlahBintang - gameState.board[pos.row][pos.col].jumlahArahYugo;
             gameState.scores[gameState.currentPlayer] += selisihSkor;
             gameState.board[pos.row][pos.col].jumlahArahYugo = jumlahBintang;
+            gameState.board[pos.row][pos.col].jenisYugo =
+              dapatkanTipeYugoBerdasarkanArah(jumlahBintang);
           }
         }
 
@@ -884,10 +957,22 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
   }
 
   const arah = [
-    [[0, 1], [0, -1]],
-    [[1, 0], [-1, 0]],
-    [[1, 1], [-1, -1]],
-    [[1, -1], [-1, 1]],
+    [
+      [0, 1],
+      [0, -1],
+    ],
+    [
+      [1, 0],
+      [-1, 0],
+    ],
+    [
+      [1, 1],
+      [-1, -1],
+    ],
+    [
+      [1, -1],
+      [-1, 1],
+    ],
   ];
 
   let adaYugoSah = false;
@@ -895,7 +980,7 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
 
   for (const pasangArah of arah) {
     let hitungBidak = 1;
-    let hitungYugoLama = 0; 
+    let hitungYugoLama = 0;
 
     pasangArah.forEach(([dr, dc]) => {
       let r = row + dr;
@@ -988,4 +1073,11 @@ function apakahMembentukYugoUntukBoard(board, row, col, color) {
   }
 
   return false;
+}
+function dapatkanTipeYugoBerdasarkanArah(jumlahArah) {
+  const arah = parseInt(jumlahArah) || 1;
+  if (arah === 2) return "oval";
+  if (arah === 3) return "segitiga";
+  if (arah === 4) return "persegi";
+  return "standar";
 }

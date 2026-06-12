@@ -14,6 +14,8 @@ const configPanel = document.getElementById("config-panel");
 const historyPanel = document.getElementById("history-panel");
 const btnCopy = document.getElementById("btnCopy");
 const pilihanMusuh = document.getElementById("pilihanMusuh");
+const pilihanGiliran = document.getElementById("pilihanGiliran");
+const panelFirstMove = document.getElementById("panelFirstMove");
 
 // 2. Fungsi Tampilan & Render
 // (Pindahkan FUNGSI-FUNGSI ini secara utuh dari script.js lama Anda)
@@ -22,8 +24,10 @@ function toggleAISettings() {
   const panel = document.getElementById("aiSettingsPanel");
   if (pilihanMusuh.value === "Artificial Intelligence") {
     panel.style.display = "block";
+    panelFirstMove.style.display = "block"; // Tampilkan pilihan giliran duluan
   } else {
     panel.style.display = "none";
+    panelFirstMove.style.display = "none"; // Sembunyikan jika Local Play
   }
 }
 // Fungsi untuk update label angka depth saat slider digeser

@@ -99,14 +99,16 @@
                 <div class="form-baris mb-3">
                   <label for="pilihanMusuh">Opponent:</label>
 
-                  <select id="pilihanMusuh" class="form-select" onchange="toggleAISettings()">
+                  <select id="pilihanMusuh" class="form-select"
+                    onchange="toggleAISettings()">
                     <option>Local Play</option>
                     <option>Artificial Intelligence</option>
                   </select>
                 </div>
 
                 <!-- AI SETTINGS: Alpha-Beta Pruning & Depth (hanya tampil jika AI dipilih) -->
-                <div id="aiSettingsPanel" class="ai-settings-panel" style="display: none;">
+                <div id="aiSettingsPanel" class="ai-settings-panel"
+                  style="display: none;">
                   <div class="ai-settings-header">
                     <span>⚙️ AI Settings</span>
                   </div>
@@ -136,8 +138,7 @@
                         min="1"
                         max="5"
                         value="2"
-                        oninput="updateDepthLabel(this.value)"
-                      />
+                        oninput="updateDepthLabel(this.value)" />
                       <span id="depthLabel" class="depth-label">2</span>
                     </div>
                   </div>
@@ -185,7 +186,7 @@
                 </div>
 
                 <div class="d-block" id="config-panel">
-                  <div class>
+                  <div>
                     <button
                       type="button"
                       class="btn btn-info text-white py-3 fw-bold rounded d-flex align-items-center justify-content-center"
@@ -244,8 +245,16 @@
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/ai.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/constants.js"></script>
+
+    <script src="js/ui.js"></script>
+    <script src="js/logic.js"></script>
+
+    <script src="js/ai/evaluate.js"></script>
+    <script src="js/ai/minimax.js"></script>
+
+    <script src="js/main.js"></script>
 
     <div
       class="modal fade"

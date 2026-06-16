@@ -66,7 +66,6 @@ function jalankanAI() {
     // Gunakan kloning papan hanya sekali di tingkat teratas (Root) untuk keamanan data utama game
     const boardPencarian = cloneBoardFast(gameState.board);
 
-    const totalLangkah = langkahLegal.length;
     for (let i = 0; i < langkahLegal.length; i++) {
       const langkah = langkahLegal[i];
 
@@ -81,6 +80,7 @@ function jalankanAI() {
 
       if (dataYugo.ilegal) {
         boardPencarian[langkah.row][langkah.col] = backupCell;
+        langkah.skorAkhir = -Infinity; // Beri penalti ekstrem jika ilegal
         continue;
       }
 
@@ -91,6 +91,9 @@ function jalankanAI() {
       } else {
         skor = minimaxMurni(boardPencarian, depth - 1, false);
       }
+
+      // Simpan skor akhir ke properti objek langkah saat ini
+      langkah.skorAkhir = skor;
 
       // Rollback status papan kembali ke posisi semula (Backtrack)
       kembalikanLangkahInPlace(
@@ -120,8 +123,28 @@ function jalankanAI() {
     const durasiBerpikir = waktuSelesai - waktuMulai;
     const namaAlgoritma = gunakanAlphaBeta ? "Alpha-Beta" : "Pure Minimax";
 
+    // === PROSES FILTRASI & GENERASI STRING TOP 3 RANKING ===
+    // Urutkan kloning langkahLegal berdasarkan skor tertinggi (descending)
+    const daftarTopLangkah = [...langkahLegal]
+      .filter((l) => l.skorAkhir !== undefined && l.skorAkhir !== -Infinity)
+      .sort((a, b) => b.skorAkhir - a.skorAkhir);
+
+    let stringTop3 = "";
+    const limitTop = Math.min(3, daftarTopLangkah.length);
+
+    for (let i = 0; i < limitTop; i++) {
+      const l = daftarTopLangkah[i];
+      // Konversi indeks baris array [0-7] menjadi baris catur [8-1]
+      const namaBaris = 8 - l.row;
+      // Konversi indeks kolom array [0-7] menjadi huruf catur [a-h] menggunakan array global indeksKeHuruf
+      const namaKolom = indeksKeHuruf[l.col];
+
+      stringTop3 += `Top ${i + 1}: ${namaKolom}${namaBaris} (${l.skorAkhir})`;
+      if (i < limitTop - 1) stringTop3 += " | ";
+    }
+
     console.log(
-      `[${namaAlgoritma}] Depth: ${depth} | Node: ${totalNodeDievaluasi} | Waktu: ${durasiBerpikir.toFixed(2)} ms`,
+      `[${namaAlgoritma}] Depth: ${depth} | Node: ${totalNodeDievaluasi} | Waktu: ${durasiBerpikir.toFixed(2)} ms | Skor -> [ ${stringTop3} ]`,
     );
 
     aiSedangBerpikir = false;

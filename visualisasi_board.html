@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Migoyugo - AI X-Ray Vision (Bootstrap Mode)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Custom Sidebar styling */
+      .sidebar-panel {
+        background-color: #1e1e1e;
+        border-right: 1px solid #2d2d2d;
+      }
+      .inspector-panel {
+        background-color: #1e1e1e;
+        border-left: 1px solid #2d2d2d;
+      }
+
+      /* Board Styling */
+      .board-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .board-grid {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-rows: repeat(8, minmax(0, 1fr));
+        gap: 3px;
+        width: 520px;
+        height: 520px;
+        background-color: #2a2a2a;
+        border: 6px solid #1a1a1a;
+        border-radius: 8px;
+        padding: 3px;
+      }
+
+      .cell {
+        background-color: #404040;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background-color 0.2s ease,
+          transform 0.1s ease;
+        border-radius: 4px;
+        user-select: none;
+      }
+
+      .cell:hover {
+        background-color: #4a4a4a;
+        transform: scale(1.02);
+      }
+
+      .cell.cell-dark {
+        background-color: #2f2f2f;
+      }
+
+      .cell.cell-dark:hover {
+        background-color: #3a3a3a;
+      }
+
+      /* Game Piece Styling */
+      .piece {
+        width: 75%;
+        height: 75%;
+        border-radius: 50%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        z-index: 5;
+        position: absolute;
+        transition: all 0.3s ease;
+      }
+
+      .piece.white {
+        background: radial-gradient(circle at 30% 30%, #ffffff, #cccccc);
+        border: 1px solid #b5b5b5;
+      }
+
+      .piece.black {
+        background: radial-gradient(circle at 30% 30%, #444444, #111111);
+        border: 1px solid #000000;
+      }
+
+      .piece.yugo {
+        border: 3px solid #ffc107 !important; /* Gold border for Yugo */
+        box-shadow: 0 0 12px #ffc107;
+      }
+
+      /* Heatmap Overlay Score */
+      .score-overlay {
+        position: absolute;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 10;
+        pointer-events: none;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+      }
+
+      .score-plus {
+        color: #2ed573;
+      }
+
+      .score-minus {
+        color: #ff4757;
+      }
+
+      .score-zero {
+        color: #ffa502;
+      }
+
+      /* Neon active states */
+      .active-neon-glow {
+        box-shadow: 0 0 15px rgba(25, 135, 84, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid h-100">
+      <div class="row h-100">
+        <!-- KOLOM 1: Panel Kontrol (20% Lebar Layar) -->
+        <div
+          class="col-md-3 col-lg-2 sidebar-panel p-4 d-flex flex-column justify-content-between"
+        >
+          <div>
+            <div class="mb-4">
+              <h4 class="text-success fw-bold m-0">🤖 Migoyugo</h4>
+              <small
+                class="text-muted text-uppercase tracking-wider font-monospace"
+                style="font-size: 0.7rem"
+                >X-Ray Engine v2.0</small
+              >
+            </div>
+
+            <div class="mb-3">
+              <label
+                for="firstTurn"
+                class="form-label text-secondary small fw-semibold"
+                >First Turn</label
+              >
+              <select
+                id="firstTurn"
+                class="form-select bg-dark text-white border-secondary small"
+              >
+                <option value="human">Manusia (White)</option>
+                <option value="ai">AI (Black)</option>
+              </select>
+            </div>
+
+            <button
+              id="btnPlaySimulate"
+              class="btn btn-success w-full fw-bold w-100 mb-3 py-2 shadow-sm"
+            >
+              ▶ Play & Simulate
+            </button>
+
+            <button
+              id="btnImportPos"
+              class="btn btn-outline-secondary btn-sm w-100 text-light border-secondary"
+            >
+              📥 Import Position
+            </button>
+          </div>
+
+          <div class="text-center">
+            <hr class="border-secondary" />
+            <small class="text-muted block"
+              >Status:
+              <span class="text-success" id="engineStatus">Ready</span></small
+            >
+          </div>
+        </div>
+
+        <!-- KOLOM 2: Arena Visualisasi (55% Lebar Layar) -->
+        <div
+          class="col-md-6 col-lg-7 d-flex flex-column align-items-center justify-content-center position-relative"
+        >
+          <!-- Papan Game Container -->
+          <div id="boardWrapper" class="board-container d-none mb-4">
+            <div id="boardArena" class="board-grid shadow-lg">
+              <!-- Grid generated dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Status & Indikator Match -->
+          <div class="text-center mt-2">
+            <h5 id="turnIndicator" class="fw-semibold text-white-50 mb-3">
+              Silakan tekan tombol <strong>Play & Simulate</strong> untuk
+              memulai.
+            </h5>
+
+            <!-- Tombol Continue (Akan dimunculkan dinamis) -->
+            <button
+              id="btnContinue"
+              class="btn btn-success btn-lg rounded-pill px-5 fw-bold d-none shadow-lg active-neon-glow transform transition"
+            >
+              Continue Game ➔
+            </button>
+          </div>
+        </div>
+
+        <!-- KOLOM 3: Inspektur Analitik (25% Lebar Layar) -->
+        <div class="col-md-3 inspector-panel p-4 d-flex flex-column">
+          <div class="border-b border-secondary pb-2 mb-3">
+            <h6 class="fw-bold text-light m-0 d-flex align-items-center">
+              <span class="me-2">🔍</span> Inspektur Evaluasi
+            </h6>
+          </div>
+
+          <!-- Konten Detail Analisis -->
+          <div id="inspectorPanel" class="flex-grow-1 overflow-auto d-none">
+            <!-- BLOK A: Simulasi Masa Depan -->
+            <div class="mb-4">
+              <span
+                class="text-muted uppercase fw-bold d-block mb-2 font-monospace"
+                style="font-size: 0.75rem; tracking-wider: 1px"
+                >JALUR ANTISIPASI (LOOKAHEAD)</span
+              >
+              <div class="p-3 bg-dark rounded border border-secondary">
+                <ul
+                  id="pvList"
+                  class="list-unstyled m-0 space-y-2 font-monospace small"
+                >
+                  <!-- Injected dynamically via JS -->
+                </ul>
+              </div>
+            </div>
+
+            <!-- BLOK B: Bedah Poin -->
+            <div>
+              <span
+                class="text-muted uppercase fw-bold d-block mb-2 font-monospace"
+                style="font-size: 0.75rem; tracking-wider: 1px"
+                >BEDAH POIN EVALUASI</span
+              >
+              <div class="p-3 bg-dark rounded border border-secondary">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <span class="small text-secondary">Skor Akhir:</span>
+                  <h3 id="totalScoreInspect" class="fw-bold text-success m-0">
+                    +0 pts
+                  </h3>
+                </div>
+                <div
+                  id="scoreDetails"
+                  class="font-monospace small text-white-50 border-top border-secondary pt-2"
+                >
+                  <!-- Injected dynamically via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tampilan Placeholder Kosong -->
+          <div
+            id="inspectorEmpty"
+            class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center text-muted p-3"
+          >
+            <p class="small m-0">
+              Klik pada baris atau petak mana saja di papan untuk membedah
+              perhitungan skor heuristik AI.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Game Scripts -->
+    <script src="js/ai/evaluate.js"></script>
+    <script src="js/ai/minimax_visual.js"></script>
+  </body>
+</html>

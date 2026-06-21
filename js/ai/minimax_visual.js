@@ -1,25 +1,5 @@
 // js/ai/minimax_visual.js
 
-// === DEFAULT HEURISTIC WEIGHTS ===
-window.HEURISTIC_WEIGHTS = {
-  WIN_IGO: 100000,
-  LOSE_IGO: 100000,
-  OPENING_THRESHOLD: 12,
-  THREAT_AI_VALID: 40000,
-  THREAT_HUMAN_VALID: 40000,
-  MIGO_BASE_VALUE: 100,
-  YUGO_AI_VALUE: 500,
-  YUGO_HUMAN_VALUE: 500,
-  CENTER_YUGO_MULTIPLIER: 5,
-  CENTER_MIGO_MULTIPLIER: 2,
-  KONEKTIVITAS_LINEAR: 15,
-  YUGO_DIFFERENCE_MULTIPLIER: 1000,
-  RING_OUTER: 5,
-  RING_MIDDLE: 10,
-  RING_CENTER: 20,
-  RING_INNER: 30,
-};
-
 // === STATE ENGINE VISUALISASI ===
 let gameState = {
   board: Array(8)
@@ -29,6 +9,8 @@ let gameState = {
   isGameOver: false,
 };
 
+let totalNodeVisual = 0;
+let waktuKalkulasiVisual = 0;
 const aiColor = "black";
 const humanColor = "white";
 let evaluasiVisual = [];
@@ -36,12 +18,13 @@ let aiPhase = 0; // 0: Human Turn, 1: Menunggu Place Piece, 2: Menunggu Pass Tur
 let langkahAITerbaikGlobal = null;
 
 const indeksKeHuruf = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const evaluasiCache = new Map();
+// const evaluasiCache = new Map();
 
 // === FORMATTING & UTILS ===
 function formatSkor(skor) {
-  if (skor === Infinity || skor >= 90000) return "+MATE";
-  if (skor === -Infinity || skor <= -90000) return "-MATE";
+  // Ubah 90000 menjadi 900000 agar Threat (400.000) ditampilkan sebagai +400K, bukan +MATE
+  if (skor === Infinity || skor >= 900000) return "+MATE";
+  if (skor === -Infinity || skor <= -900000) return "-MATE";
   let sign = skor > 0 ? "+" : skor < 0 ? "-" : "";
   let absVal = Math.abs(Math.floor(skor));
   if (absVal >= 1000000) return sign + (absVal / 1000000).toFixed(1) + "M";
@@ -57,113 +40,172 @@ function koordinatKeNotasi(row, col) {
 // 100% CLONE DARI MINIMAX.JS (FUNGSI IDENTIK TANPA MODIFIKASI)
 // =========================================================================
 
-function cloneBoardFast(board) {
-  const newBoard = new Array(8);
-  for (let r = 0; r < 8; r++) {
-    newBoard[r] = new Array(8);
-    for (let c = 0; c < 8; c++) {
-      const cell = board[r][c];
-      if (cell === null) {
-        newBoard[r][c] = null;
-      } else {
-        newBoard[r][c] = {
-          color: cell.color,
-          isYugo: cell.isYugo,
-          jumlahArahYugo: cell.jumlahArahYugo || 0,
-          jenisYugo: cell.jenisYugo || "standar",
-          migosTerhapus: cell.migosTerhapus ? [...cell.migosTerhapus] : [],
-        };
-      }
-    }
-  }
-  return newBoard;
-}
-function cloneBoard(board) {
-  return cloneBoardFast(board);
-}
+// function cloneBoardFast(board) {
+//   const newBoard = new Array(8);
+//   for (let r = 0; r < 8; r++) {
+//     newBoard[r] = new Array(8);
+//     for (let c = 0; c < 8; c++) {
+//       const cell = board[r][c];
+//       if (cell === null) {
+//         newBoard[r][c] = null;
+//       } else {
+//         newBoard[r][c] = {
+//           color: cell.color,
+//           isYugo: cell.isYugo,
+//           jumlahArahYugo: cell.jumlahArahYugo || 0,
+//           jenisYugo: cell.jenisYugo || "standar",
+//           migosTerhapus: cell.migosTerhapus ? [...cell.migosTerhapus] : [],
+//         };
+//       }
+//     }
+//   }
+//   return newBoard;
+// }
+// function cloneBoard(board) {
+//   return cloneBoardFast(board);
+// }
 
-function ambilSemuaLangkahLegalUntukBoard(board, color) {
-  let legal = [];
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      if (board[r][c] === null) {
-        legal.push({ row: r, col: c });
-      }
-    }
-  }
-  return legal;
-}
+// function ambilSemuaLangkahLegalUntukBoard(board, color) {
+//   let legal = [];
+//   for (let r = 0; r < 8; r++) {
+//     for (let c = 0; c < 8; c++) {
+//       if (board[r][c] === null) {
+//         legal.push({ row: r, col: c });
+//       }
+//     }
+//   }
+//   return legal;
+// }
 
-function apakahLangkahLegalUntukBoard(board, row, col, color) {
-  if (row < 0 || row > 7 || col < 0 || col > 7) return false;
-  return board[row][col] === null;
-}
+// function apakahLangkahLegalUntukBoard(board, row, col, color) {
+//   if (row < 0 || row > 7 || col < 0 || col > 7) return false;
+//   if (board[row][col] !== null) {
+//     return false;
+//   }
 
-function cekYugoSimulasi(board, row, col, color) {
-  const arah = [
-    [
-      [0, 1],
-      [0, -1],
-    ],
-    [
-      [1, 0],
-      [-1, 0],
-    ],
-    [
-      [1, 1],
-      [-1, -1],
-    ],
-    [
-      [1, -1],
-      [-1, 1],
-    ],
-  ];
-  let terbentukYugo = false;
-  let jumlahArahYugo = 0;
-  let migosTerhapus = [];
+//   const arah = [
+//     [[0, 1], [0, -1]],
+//     [[1, 0], [-1, 0]],
+//     [[1, 1], [-1, -1]],
+//     [[1, -1], [-1, 1]],
+//   ];
 
-  for (let i = 0; i < 4; i++) {
-    const pasangArah = arah[i];
-    let hitungBidak = 1;
-    let koordinatMigo = [];
+//   let adaYugoSah = false;
+//   let adaLongLine = false;
 
-    for (let j = 0; j < 2; j++) {
-      const dr = pasangArah[j][0];
-      const dc = pasangArah[j][1];
-      let r = row + dr;
-      let c = col + dc;
+//   for (const pasangArah of arah) {
+//     let hitungBidak = 1;
+//     let hitungYugoLama = 0;
 
-      while (
-        r >= 0 &&
-        r < 8 &&
-        c >= 0 &&
-        c < 8 &&
-        board[r][c] !== null &&
-        board[r][c].color === color
-      ) {
-        hitungBidak++;
-        if (!board[r][c].isYugo) {
-          koordinatMigo.push({ r, c });
-        }
-        r += dr;
-        c += dc;
-      }
-    }
+//     pasangArah.forEach(([dr, dc]) => {
+//       let r = row + dr;
+//       let c = col + dc;
 
-    if (hitungBidak === 4) {
-      // HARUS TEPAT 4
-      terbentukYugo = true;
-      jumlahArahYugo++;
-      migosTerhapus = migosTerhapus.concat(koordinatMigo);
-    }
-  }
+//       while (
+//         r >= 0 &&
+//         r < 8 &&
+//         c >= 0 &&
+//         c < 8 &&
+//         board[r][c] !== null &&
+//         board[r][c].color === color
+//       ) {
+//         hitungBidak++;
 
-  return { terbentukYugo, jumlahArahYugo, migosTerhapus };
-}
+//         // Hitung jumlah Yugo fisik yang sudah berdiri di jalur ini
+//         if (board[r][c].isYugo) {
+//           hitungYugoLama++;
+//         }
 
-function apakahMembentukYugoUntukBoard(board, row, col, color) {
-  return cekYugoSimulasi(board, row, col, color).terbentukYugo;
-}
+//         r += dr;
+//         c += dc;
+//       }
+//     });
+
+//     if (hitungBidak === 4) {
+//       adaYugoSah = true;
+//     } else if (hitungBidak > 4) {
+//       adaLongLine = true;
+//     }
+
+//     // Rule: No Long Lines Mutlak di satu jalur yang sama
+//     if (hitungBidak > 4 || hitungYugoLama >= 4) {
+//       return false;
+//     }
+//   }
+
+//   // Jika membuat long line tapi tidak menghasilkan yugo di jalur persilangan lainnya
+//   if (adaLongLine && !adaYugoSah) {
+//     return false;
+//   }
+
+//   return true;
+// }
+
+// function cekYugoSimulasi(board, row, col, color) {
+//   const arah = [
+//     [
+//       [0, 1],
+//       [0, -1],
+//     ],
+//     [
+//       [1, 0],
+//       [-1, 0],
+//     ],
+//     [
+//       [1, 1],
+//       [-1, -1],
+//     ],
+//     [
+//       [1, -1],
+//       [-1, 1],
+//     ],
+//   ];
+//   let terbentukYugo = false;
+//   let jumlahArahYugo = 0;
+//   let migosTerhapus = [];
+
+//   for (let i = 0; i < 4; i++) {
+//     const pasangArah = arah[i];
+//     let hitungBidak = 1;
+//     let koordinatMigo = [];
+
+//     for (let j = 0; j < 2; j++) {
+//       const dr = pasangArah[j][0];
+//       const dc = pasangArah[j][1];
+//       let r = row + dr;
+//       let c = col + dc;
+
+//       while (
+//         r >= 0 &&
+//         r < 8 &&
+//         c >= 0 &&
+//         c < 8 &&
+//         board[r][c] !== null &&
+//         board[r][c].color === color
+//       ) {
+//         hitungBidak++;
+//         if (!board[r][c].isYugo) {
+//           koordinatMigo.push({ r, c });
+//         }
+//         r += dr;
+//         c += dc;
+//       }
+//     }
+
+//     if (hitungBidak === 4) {
+//       // HARUS TEPAT 4
+//       terbentukYugo = true;
+//       jumlahArahYugo++;
+//       migosTerhapus = migosTerhapus.concat(koordinatMigo);
+//     }
+//   }
+
+//   return { terbentukYugo, jumlahArahYugo, migosTerhapus };
+// }
+
+// function apakahMembentukYugoUntukBoard(board, row, col, color) {
+//   return cekYugoSimulasi(board, row, col, color).terbentukYugo;
+// }
 
 function jalankanLangkahInPlace(board, row, col, color) {
   if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
@@ -227,72 +269,72 @@ function kembalikanLangkahInPlace(
   board[row][col] = backupCell;
 }
 
-function jalankanLangkahSimulasi(board, row, col, color) {
-  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) return false;
+// function jalankanLangkahSimulasi(board, row, col, color) {
+//   if (!apakahLangkahLegalUntukBoard(board, row, col, color)) return false;
 
-  board[row][col] = {
-    color: color,
-    isYugo: false,
-    jumlahArahYugo: 0,
-    migosTerhapus: [],
-  };
-  const hasilYugo = cekYugoSimulasi(board, row, col, color);
+//   board[row][col] = {
+//     color: color,
+//     isYugo: false,
+//     jumlahArahYugo: 0,
+//     migosTerhapus: [],
+//   };
+//   const hasilYugo = cekYugoSimulasi(board, row, col, color);
 
-  if (hasilYugo.terbentukYugo) {
-    board[row][col].isYugo = true;
-    board[row][col].jumlahArahYugo = hasilYugo.jumlahArahYugo;
-    board[row][col].migosTerhapus = hasilYugo.migosTerhapus;
+//   if (hasilYugo.terbentukYugo) {
+//     board[row][col].isYugo = true;
+//     board[row][col].jumlahArahYugo = hasilYugo.jumlahArahYugo;
+//     board[row][col].migosTerhapus = hasilYugo.migosTerhapus;
 
-    let jenisBentuk = "standar";
-    if (hasilYugo.jumlahArahYugo === 2) jenisBentuk = "oval";
-    else if (hasilYugo.jumlahArahYugo === 3) jenisBentuk = "segitiga";
-    else if (hasilYugo.jumlahArahYugo === 4) jenisBentuk = "persegi";
-    board[row][col].jenisYugo = jenisBentuk;
+//     let jenisBentuk = "standar";
+//     if (hasilYugo.jumlahArahYugo === 2) jenisBentuk = "oval";
+//     else if (hasilYugo.jumlahArahYugo === 3) jenisBentuk = "segitiga";
+//     else if (hasilYugo.jumlahArahYugo === 4) jenisBentuk = "persegi";
+//     board[row][col].jenisYugo = jenisBentuk;
 
-    const len = hasilYugo.migosTerhapus.length;
-    for (let i = 0; i < len; i++) {
-      const migo = hasilYugo.migosTerhapus[i];
-      board[migo.r][migo.c] = null;
-    }
-  }
-  return true;
-}
+//     const len = hasilYugo.migosTerhapus.length;
+//     for (let i = 0; i < len; i++) {
+//       const migo = hasilYugo.migosTerhapus[i];
+//       board[migo.r][migo.c] = null;
+//     }
+//   }
+//   return true;
+// }
 
-function cariLangkahIgoLangsung(board, color) {
-  const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, color);
-  const kandidat = [];
-  const totalLangkah = langkahLegal.length;
+// function cariLangkahIgoLangsung(board, color) {
+//   const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, color);
+//   const kandidat = [];
+//   const totalLangkah = langkahLegal.length;
 
-  for (let i = 0; i < totalLangkah; i++) {
-    const langkah = langkahLegal[i];
-    const boardSimulasi = cloneBoard(board);
+//   for (let i = 0; i < totalLangkah; i++) {
+//     const langkah = langkahLegal[i];
+//     const boardSimulasi = cloneBoard(board);
 
-    if (
-      !jalankanLangkahSimulasi(boardSimulasi, langkah.row, langkah.col, color)
-    ) {
-      continue;
-    }
+//     if (
+//       !jalankanLangkahSimulasi(boardSimulasi, langkah.row, langkah.col, color)
+//     ) {
+//       continue;
+//     }
 
-    // deteksiIgo harus ada dari file evaluate.js
-    if (typeof deteksiIgo === "function" && deteksiIgo(boardSimulasi, color)) {
-      kandidat.push({
-        row: langkah.row,
-        col: langkah.col,
-        nilaiTengah:
-          typeof nilaiKontrolTengah === "function"
-            ? nilaiKontrolTengah(langkah.row, langkah.col)
-            : 0,
-      });
-    }
-  }
+//     // deteksiIgo harus ada dari file evaluate.js
+//     if (typeof deteksiIgo === "function" && deteksiIgo(boardSimulasi, color)) {
+//       kandidat.push({
+//         row: langkah.row,
+//         col: langkah.col,
+//         nilaiTengah:
+//           typeof nilaiKontrolTengah === "function"
+//             ? nilaiKontrolTengah(langkah.row, langkah.col)
+//             : 0,
+//       });
+//     }
+//   }
 
-  if (kandidat.length > 0) {
-    kandidat.sort((a, b) => b.nilaiTengah - a.nilaiTengah);
-    return kandidat[0];
-  }
+//   if (kandidat.length > 0) {
+//     kandidat.sort((a, b) => b.nilaiTengah - a.nilaiTengah);
+//     return kandidat[0];
+//   }
 
-  return null;
-}
+//   return null;
+// }
 
 function urutkanLangkah(board, langkahLegal, colorSekarang) {
   for (let i = 0; i < langkahLegal.length; i++) {
@@ -340,6 +382,15 @@ function dapatkanPapanKeyString(board) {
 
 function minimaxVisualAlphaBeta(board, depth, alpha, beta, isMaximizing) {
   // CACHING LOGIC identik dengan minimax.js (hanya depth == 0)
+  totalNodeVisual++;
+
+  if (typeof deteksiIgo === "function") {
+    if (deteksiIgo(board, aiColor))
+      return { score: HEURISTIC_WEIGHTS.WIN_IGO + depth, path: [] };
+    if (deteksiIgo(board, humanColor))
+      return { score: HEURISTIC_WEIGHTS.LOSE_IGO - depth, path: [] };
+  }
+
   if (depth === 0) {
     const key = dapatkanPapanKeyString(board);
     if (evaluasiCache.has(key))
@@ -422,6 +473,9 @@ function minimaxVisualAlphaBeta(board, depth, alpha, beta, isMaximizing) {
 function kalkulasiHeatmapUntukWarna(color) {
   evaluasiVisual = [];
   evaluasiCache.clear();
+
+  totalNodeVisual = 0; // Reset node setiap kali kalkulasi baru dimulai
+  const waktuMulai = performance.now(); // Mulai timer stopwatch
 
   // TERCETAK DI BATU: TARGET DEPTH 4 SESUAI PERMINTAAN USER
   const currentDepth = 4;
@@ -547,6 +601,9 @@ function kalkulasiHeatmapUntukWarna(color) {
     langkahTerbaik = langkahLegal[0];
   }
 
+  const waktuSelesai = performance.now(); // Hentikan timer stopwatch
+  waktuKalkulasiVisual = waktuSelesai - waktuMulai; // Simpan durasi total
+
   return langkahTerbaik;
 }
 
@@ -604,53 +661,63 @@ function handleKlikKotak(r, c) {
       if (langkahAITerbaikGlobal) {
         gambarPapan();
         renderSkorDiPapan();
+
+        const selTerbaik = document.getElementById(
+          `cell-${langkahAITerbaikGlobal.row}-${langkahAITerbaikGlobal.col}`,
+        );
+        if (selTerbaik) {
+          selTerbaik.classList.add("best-move-highlight");
+        }
+
         tampilkanInspeksiDetail(langkahAITerbaikGlobal);
 
         aiPhase = 1;
         const btn = document.getElementById("btnContinue");
-        btn.innerText = "Place AI Piece ➔";
+
+        // --- PERBAIKAN UI TOMBOL ---
+        btn.innerText = "Continue ➔";
         btn.classList.remove("d-none");
-        btn.classList.remove("btn-success");
-        btn.classList.add("btn-warning");
+        btn.classList.remove("btn-warning");
+        btn.classList.add("btn-success"); // Paksa tombol jadi hijau neon
 
         document.getElementById("turnIndicator").innerHTML =
-          "⏸️ Silakan periksa skor, lalu klik tombol untuk meletakkan bidak.";
-        document.getElementById("engineStatus").innerText =
-          "Waiting for Placement";
+          "⏸️ Evaluasi selesai. Silakan periksa skor, lalu klik Continue.";
+        document.getElementById("engineStatus").innerText = "Waiting for User";
       }
     }, 50);
   }
 }
 
 document.getElementById("btnContinue")?.addEventListener("click", () => {
-  const btn = document.getElementById("btnContinue");
   if (aiPhase === 1) {
+    // 1. Eksekusi bidak AI secara instan
     jalankanLangkahInPlace(
       gameState.board,
       langkahAITerbaikGlobal.row,
       langkahAITerbaikGlobal.col,
       aiColor,
     );
-    gambarPapan();
-    renderSkorDiPapan();
 
-    aiPhase = 2;
-    btn.innerText = "Start Human Turn ➔";
-    btn.classList.remove("btn-warning");
-    btn.classList.add("btn-success");
-
-    document.getElementById("turnIndicator").innerHTML =
-      "⏸️ Bidak AI telah diletakkan. Klik tombol untuk memulai giliranmu.";
-    document.getElementById("engineStatus").innerText = "Waiting for Turn Pass";
-  } else if (aiPhase === 2) {
+    // 2. Reset status giliran ke Manusia
     aiPhase = 0;
     gameState.turn = "human";
+
+    // 3. Bersihkan angka heatmap dari memori
     evaluasiVisual = [];
+
+    // 4. Gambar ulang papan (Otomatis menghilangkan skor heatmap)
     gambarPapan();
+
+    // 5. Sembunyikan tombol Continue
+    const btn = document.getElementById("btnContinue");
     btn.classList.add("d-none");
+
+    // 6. Kembalikan teks indikator turn
     document.getElementById("turnIndicator").innerHTML =
       "🟢 Human's Turn (Silakan jalan)";
     document.getElementById("engineStatus").innerText = "Waiting";
+
+    // 7. Bersihkan Panel Inspektur Kanan
     document.getElementById("inspectorEmpty").classList.remove("d-none");
     document.getElementById("inspectorPanel").classList.add("d-none");
   }
@@ -676,27 +743,115 @@ function gambarPapan() {
   }
 }
 
+// 1. GANTI FUNGSI INI DI minimax_visual.js
 function bedahRincianEvaluasi(board, aiColor) {
+  const humanCol = aiColor === "white" ? "black" : "white";
   let material = 0,
-    tengah = 0;
+    tengah = 0,
+    konektivitas = 0;
+
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const cell = board[r][c];
       if (!cell) continue;
       let sign = cell.color === aiColor ? 1 : -1;
+
+      // Hitung Material & Area Tengah
       material += HEURISTIC_WEIGHTS.MIGO_BASE_VALUE * sign;
-      if (cell.isYugo)
+      if (cell.isYugo) {
         material +=
           HEURISTIC_WEIGHTS.YUGO_AI_VALUE * (cell.jumlahArahYugo || 1) * sign;
-      if (typeof nilaiKontrolTengah === "function") {
-        tengah +=
-          nilaiKontrolTengah(r, c) *
-          sign *
-          (cell.isYugo ? HEURISTIC_WEIGHTS.CENTER_YUGO_MULTIPLIER : 1);
+        if (typeof nilaiKontrolTengah === "function") {
+          tengah +=
+            nilaiKontrolTengah(r, c) *
+            HEURISTIC_WEIGHTS.CENTER_YUGO_MULTIPLIER *
+            sign;
+        }
+      } else {
+        if (typeof nilaiKontrolTengah === "function") {
+          tengah +=
+            nilaiKontrolTengah(r, c) *
+            HEURISTIC_WEIGHTS.CENTER_MIGO_MULTIPLIER *
+            sign;
+        }
+      }
+
+      // Hitung Konektivitas
+      if (typeof evaluasiKonektivitasLinear === "function") {
+        konektivitas +=
+          evaluasiKonektivitasLinear(board, r, c, cell.color) *
+          HEURISTIC_WEIGHTS.KONEKTIVITAS_LINEAR *
+          sign;
       }
     }
   }
-  return { material, tengah };
+
+  // Hitung Ancaman (Threats)
+  let ancaman = 0;
+  if (typeof deteksiAncamanIgo === "function") {
+    const ancamanAI = deteksiAncamanIgo(board, aiColor);
+    const ancamanHuman = deteksiAncamanIgo(board, humanCol);
+    // Mendukung kembalian berupa objek (fitur no long line) maupun angka biasa
+    const poinAI =
+      (ancamanAI.valid !== undefined ? ancamanAI.valid : ancamanAI) *
+      HEURISTIC_WEIGHTS.THREAT_AI_VALID;
+    const poinHuman =
+      (ancamanHuman.valid !== undefined ? ancamanHuman.valid : ancamanHuman) *
+      HEURISTIC_WEIGHTS.THREAT_HUMAN_VALID;
+    ancaman = poinAI - poinHuman;
+  }
+
+  return { material, tengah, konektivitas, ancaman };
+}
+
+// 2. GANTI FUNGSI INI DI minimax_visual.js
+function tampilkanInspeksiDetail(langkah) {
+  document.getElementById("inspectorEmpty").classList.add("d-none");
+  document.getElementById("inspectorPanel").classList.remove("d-none");
+
+  const ulPath = document.getElementById("pvList");
+  ulPath.innerHTML = "";
+  langkah.pathPrediksi.forEach((node, idx) => {
+    const pelaku = node.color === aiColor ? "AI" : "Human";
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="text-success fw-bold">${idx + 1}.</span> ${pelaku} ➔ <span class="text-white">${koordinatKeNotasi(node.row, node.col)}</span>`;
+    ulPath.appendChild(li);
+  });
+
+  let futureBoard = cloneBoardFast(gameState.board);
+  langkah.pathPrediksi.forEach((node) => {
+    jalankanLangkahInPlace(futureBoard, node.row, node.col, node.color);
+  });
+
+  const realScore = evaluasiBoard(futureBoard);
+  const rincian = bedahRincianEvaluasi(futureBoard, aiColor);
+
+  document.getElementById("totalScoreInspect").innerText =
+    formatSkor(langkah.skorAkhir) + " pts";
+
+  // Update InnerHTML agar menampilkan 4 pilar poin evaluasi secara lengkap
+  document.getElementById("scoreDetails").innerHTML = `
+    <div class="d-flex justify-content-between mb-2"><span>🔵 Material/Yugo:</span> <span class="${rincian.material >= 0 ? "text-success" : "text-danger"} fw-bold">${rincian.material > 0 ? "+" + rincian.material : rincian.material}</span></div>
+    <div class="d-flex justify-content-between mb-2"><span>🎯 Area Tengah:</span> <span class="${rincian.tengah >= 0 ? "text-success" : "text-danger"} fw-bold">${Math.floor(rincian.tengah)}</span></div>
+    <div class="d-flex justify-content-between mb-2"><span>🔗 Konektivitas:</span> <span class="${rincian.konektivitas >= 0 ? "text-success" : "text-danger"} fw-bold">${rincian.konektivitas > 0 ? "+" + rincian.konektivitas : rincian.konektivitas}</span></div>
+    <div class="d-flex justify-content-between mb-2"><span>⚠️ Ancaman (Threat):</span> <span class="${rincian.ancaman >= 0 ? "text-success" : "text-danger"} fw-bold">${rincian.ancaman > 0 ? "+" + formatSkor(rincian.ancaman) : formatSkor(rincian.ancaman)}</span></div>
+    
+    <div class="d-flex justify-content-between font-monospace border-top border-secondary pt-2 mt-2"><span>Real Eval Output:</span> <span class="fw-bold">${formatSkor(realScore)}</span></div>
+  `;
+
+  // Update metrik performa jika elemennya sudah ada di HTML
+  const elTime = document.getElementById("evalTime");
+  const elNodes = document.getElementById("evalNodes");
+  if (elTime)
+    elTime.innerText =
+      typeof waktuKalkulasiVisual !== "undefined"
+        ? waktuKalkulasiVisual.toFixed(2) + " ms"
+        : "0 ms";
+  if (elNodes)
+    elNodes.innerText =
+      typeof totalNodeVisual !== "undefined"
+        ? totalNodeVisual.toLocaleString() + " nodes"
+        : "0 nodes";
 }
 
 function tampilkanInspeksiDetail(langkah) {
@@ -722,11 +877,30 @@ function tampilkanInspeksiDetail(langkah) {
 
   document.getElementById("totalScoreInspect").innerText =
     formatSkor(langkah.skorAkhir) + " pts";
+
+  // Update InnerHTML agar menampilkan 4 pilar poin evaluasi secara lengkap
   document.getElementById("scoreDetails").innerHTML = `
     <div class="d-flex justify-content-between mb-2"><span>🔵 Material/Yugo:</span> <span class="${rincian.material >= 0 ? "text-success" : "text-danger"} fw-bold">${rincian.material > 0 ? "+" + rincian.material : rincian.material}</span></div>
     <div class="d-flex justify-content-between mb-2"><span>🎯 Area Tengah:</span> <span class="${rincian.tengah >= 0 ? "text-success" : "text-danger"} fw-bold">${Math.floor(rincian.tengah)}</span></div>
+    <div class="d-flex justify-content-between mb-2"><span>🔗 Konektivitas:</span> <span class="${rincian.konektivitas >= 0 ? "text-success" : "text-danger"} fw-bold">${rincian.konektivitas > 0 ? "+" + rincian.konektivitas : rincian.konektivitas}</span></div>
+    <div class="d-flex justify-content-between mb-2"><span>⚠️ Ancaman (Threat):</span> <span class="${rincian.ancaman >= 0 ? "text-success" : "text-danger"} fw-bold">${rincian.ancaman > 0 ? "+" + formatSkor(rincian.ancaman) : formatSkor(rincian.ancaman)}</span></div>
+    
     <div class="d-flex justify-content-between font-monospace border-top border-secondary pt-2 mt-2"><span>Real Eval Output:</span> <span class="fw-bold">${formatSkor(realScore)}</span></div>
   `;
+
+  // Update metrik performa jika elemennya sudah ada di HTML
+  const elTime = document.getElementById("evalTime");
+  const elNodes = document.getElementById("evalNodes");
+  if (elTime)
+    elTime.innerText =
+      typeof waktuKalkulasiVisual !== "undefined"
+        ? waktuKalkulasiVisual.toFixed(2) + " ms"
+        : "0 ms";
+  if (elNodes)
+    elNodes.innerText =
+      typeof totalNodeVisual !== "undefined"
+        ? totalNodeVisual.toLocaleString() + " nodes"
+        : "0 nodes";
 }
 
 document.getElementById("btnPlaySimulate").addEventListener("click", () => {
@@ -757,6 +931,14 @@ document.getElementById("btnPlaySimulate").addEventListener("click", () => {
       if (langkahAITerbaikGlobal) {
         gambarPapan();
         renderSkorDiPapan();
+
+        const selTerbaik = document.getElementById(
+          `cell-${langkahAITerbaikGlobal.row}-${langkahAITerbaikGlobal.col}`,
+        );
+        if (selTerbaik) {
+          selTerbaik.classList.add("best-move-highlight");
+        }
+
         tampilkanInspeksiDetail(langkahAITerbaikGlobal);
 
         aiPhase = 1;

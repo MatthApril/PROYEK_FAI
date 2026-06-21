@@ -17,7 +17,7 @@ function evaluasiFaseOpening(row, col) {
 function evaluasiBoard(board) {
   // 0. CEK KEMENANGAN MUTLAK
   if (deteksiIgo(board, aiColor)) return HEURISTIC_WEIGHTS.WIN_IGO;
-  if (deteksiIgo(board, humanColor)) return -HEURISTIC_WEIGHTS.LOSE_IGO; // Dibalik jadi minus
+  if (deteksiIgo(board, humanColor)) return HEURISTIC_WEIGHTS.LOSE_IGO;
 
   let skor = 0;
   const inOpening =

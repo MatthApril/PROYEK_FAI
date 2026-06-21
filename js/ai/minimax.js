@@ -165,6 +165,9 @@ function jalankanAI() {
 function minimaxAlphaBeta(board, depth, alpha, beta, isMaximizing) {
   totalNodeDievaluasi++;
 
+  if (deteksiIgo(board, aiColor)) return HEURISTIC_WEIGHTS.WIN_IGO + depth;
+  if (deteksiIgo(board, humanColor)) return HEURISTIC_WEIGHTS.LOSE_IGO - depth;
+
   if (depth === 0) {
     // CACHING LOGIC: Generate string key unik untuk posisi board saat ini
     const key = dapatkanPapanKeyString(board);
@@ -351,6 +354,9 @@ function urutkanLangkah(board, langkahLegal, colorSekarang) {
 
 function minimaxMurni(board, depth, isMaximizing) {
   totalNodeDievaluasi++; // Menghitung setiap node yang dikunjungi
+
+  if (deteksiIgo(board, aiColor)) return HEURISTIC_WEIGHTS.WIN_IGO + depth;
+  if (deteksiIgo(board, humanColor)) return HEURISTIC_WEIGHTS.LOSE_IGO - depth;
 
   if (depth === 0) {
     return evaluasiBoard(board);

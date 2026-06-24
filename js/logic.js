@@ -1,6 +1,5 @@
 // === js/logic.js ===
 
-// (Pindahkan FUNGSI-FUNGSI ini secara utuh dari script.js lama Anda)
 function handleKlikKotak(row, col, dariAI = false) {
   // tambahan parameter dariAI untuk membedakan klik manual vs AI
   if (gameState.gameStatus !== "active") {
@@ -24,7 +23,6 @@ function handleKlikKotak(row, col, dariAI = false) {
     return;
   }
 
-  // === PERBAIKAN: VALIDASI ATURAN LEGALITAS (NO LONG LINES) ===
   // Panggil fungsi apakahLangkahLegal sebelum bidak benar-benar diletakkan
   if (!apakahLangkahLegal(row, col, gameState.currentPlayer)) {
     // Beri efek flash merah pada petak HTML

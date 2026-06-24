@@ -24,6 +24,29 @@ function handleKlikKotak(row, col, dariAI = false) {
     return;
   }
 
+  // === PERBAIKAN: VALIDASI ATURAN LEGALITAS (NO LONG LINES) ===
+  // Panggil fungsi apakahLangkahLegal sebelum bidak benar-benar diletakkan
+  if (!apakahLangkahLegal(row, col, gameState.currentPlayer)) {
+    // Beri efek flash merah pada petak HTML
+    const kotakIllegal = papanGame.querySelector(
+      `[data-row="${row}"][data-col="${col}"]`,
+    );
+    if (kotakIllegal) {
+      kotakIllegal.classList.add("illegal-move");
+      setTimeout(() => {
+        kotakIllegal.classList.remove("illegal-move");
+      }, 1000);
+    }
+
+    // Tampilkan notifikasi dan langsung batalkan langkah!
+    tampilkanAlert(
+      "gagal",
+      "Ilegal!",
+      "Langkah ini melanggar aturan No Long Lines!",
+    );
+    return;
+  }
+
   // 2. UPDATE VIRTUAL BOARD
   gameState.board[row][col] = {
     color: gameState.currentPlayer,
@@ -35,23 +58,6 @@ function handleKlikKotak(row, col, dariAI = false) {
 
   // 3. JALANKAN LOGIKA EVALUASI YUGO (Sekarang menyimpan angka/boolean)
   const totalYugoLangkahIni = yugo(row, col, gameState.currentPlayer);
-  // Jika langkah tersebut murni Long Line (>4) tanpa menghasilkan Yugo sah di arah lain sama sekali
-  if (totalYugoLangkahIni === -1) {
-    // Batalkan penempatan bidak di virtual board
-    gameState.board[row][col] = null;
-
-    // Beri efek flash merah pada petak HTML
-    const kotakIllegal = papanGame.querySelector(
-      `[data-row="${row}"][data-col="${col}"]`,
-    );
-    if (kotakIllegal) {
-      kotakIllegal.classList.add("illegal-move");
-      setTimeout(() => {
-        kotakIllegal.classList.remove("illegal-move");
-      }, 1000);
-    }
-    return; // STOP! Langkah dibatalkan total, turn tidak berganti
-  }
 
   // 4. AKSI HIGHLIGHT: Simpan posisi kotak terbaru ke dalam lastMove
   lastMove = { row: row, col: col };
@@ -999,16 +1005,26 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
       }
     });
 
+    // 1. Cek apakah membentuk Yugo yang sah (tepat 4)
     if (hitungBidak === 4) {
       adaYugoSah = true;
     }
+    // 2. Cek apakah membentuk Long Line (>4)
+    else if (hitungBidak > 4) {
+      adaLongLine = true;
+      // console.log(
+      //   `Langkah ilegal: Membentuk Long Line (${hitungBidak}) di (${row}, ${col})`,
+      // );
+    }
 
-    // Rule: No Long Lines
-    if (hitungBidak > 4 || hitungYugoLama >= 4) {
+    // 3. Batasan keamanan: Mencegah penumpukan di jalur yang sudah ada 4 Yugo
+    if (hitungYugoLama >= 4) {
       return false;
     }
   }
 
+  // 4. KEPUTUSAN FINAL (Tereksekusi SETELAH semua arah dicek)
+  // Aturan Migoyugo: Jika membuat Long Line (>4) TAPI tidak ada Yugo (4) di arah silang = ILEGAL
   if (adaLongLine && !adaYugoSah) {
     return false;
   }

@@ -288,19 +288,11 @@ function yugo(row, col, color) {
 }
 // === TAMBAHAN FUNGSI BARU UNTUK DETEKSI WEGO (64 KOTAK PENUH) ===
 function cekWegoPenuh() {
-  let kotakTerisi = 0;
+  const langkahLegal = ambilSemuaLangkahLegal(gameState.currentPlayer);
 
-  // Hitung jumlah bidak yang ada di atas virtual board
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      if (gameState.board[r][c] !== null) {
-        kotakTerisi++;
-      }
-    }
-  }
-
-  // Jika seluruh 64 petak sudah terisi penuh, jalankan evaluasi pemenang Wego
-  if (kotakTerisi === 64) {
+  // Jika pemain sudah tidak punya langkah legal sama sekali
+  // (Entah karena ke-64 petak sudah penuh, ATAU sisa petak kosong terlarang karena aturan Long Lines)
+  if (langkahLegal.length === 0) {
     const yugoPutih = gameState.yugo.white;
     const yugoHitam = gameState.yugo.black;
     let skorYugoPutih = 0;
@@ -312,12 +304,19 @@ function cekWegoPenuh() {
         const bidak = gameState.board[r][c];
 
         if (bidak && bidak.isYugo) {
-          // Ambil jenisYugo dari properti bidak (pastikan saat yugo terbentuk, properti jenisYugo diisi string: "standar"/"oval"/"segitiga"/"persegi")
-          // Default ke "standar" jika properti belum terdefinisi
+          // Ambil jenisYugo dari properti bidak
           const jenis =
             bidak.jenisYugo ||
             dapatkanTipeYugoBerdasarkanArah(bidak.jumlahArahYugo);
-          const bobotSkor = HEURISTIC_WEIGHTS.YUGO_TIERS[jenis] || 1;
+
+          // Memastikan evaluasi bobot aman jika object HEURISTIC_WEIGHTS tidak terpanggil
+          let bobotSkor = 1;
+          if (
+            typeof HEURISTIC_WEIGHTS !== "undefined" &&
+            HEURISTIC_WEIGHTS.YUGO_TIERS
+          ) {
+            bobotSkor = HEURISTIC_WEIGHTS.YUGO_TIERS[jenis] || 1;
+          }
 
           if (bidak.color === "white") {
             skorYugoPutih += bobotSkor;

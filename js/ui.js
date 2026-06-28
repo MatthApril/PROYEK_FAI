@@ -1,10 +1,6 @@
 // 1. Deklarasi DOM Elements
-const cekTimer = document.getElementById("cekTimer");
 const waktuPutih = document.querySelectorAll(".waktu-putih");
 const waktuHitam = document.querySelectorAll(".waktu-hitam");
-const timerSetting = document.getElementById("timerSetting");
-const menit = document.getElementById("menit");
-const increment = document.getElementById("increment");
 const infoPutih = document.getElementById("info-putih");
 const infoHitam = document.getElementById("info-hitam");
 const papanGame = document.getElementById("papanGame");
@@ -17,7 +13,7 @@ const pilihanMusuh = document.getElementById("pilihanMusuh");
 const pilihanGiliran = document.getElementById("pilihanGiliran");
 const panelFirstMove = document.getElementById("panelFirstMove");
 
-// 2. Fungsi Tampilan & Render
+// 1. Fungsi Tampilan & Render
 // (Pindahkan FUNGSI-FUNGSI ini secara utuh dari script.js lama Anda)
 // Fungsi untuk menampilkan/menyembunyikan panel AI Settings berdasarkan pilihan opponent
 function toggleAISettings() {
@@ -30,10 +26,7 @@ function toggleAISettings() {
     panelFirstMove.style.display = "none"; // Sembunyikan jika Local Play
   }
 }
-// Fungsi untuk update label angka depth saat slider digeser
-function updateDepthLabel(value) {
-  document.getElementById("depthLabel").textContent = value;
-}
+
 // Fungsi untuk membuat elemen kotak HTML secara dinamis berdasarkan susunan matriks
 function inisialisasiPapanFisik() {
   // Bersihkan kotak lama jika ada (tanpa menghapus angka/huruf overlay)
@@ -157,12 +150,6 @@ function catatRiwayatLangkah(row, col, player) {
 
   // Auto scroll textarea ke paling bawah saat history penuh
   moveHistory.scrollTop = moveHistory.scrollHeight;
-}
-
-function formatTeksWaktu(detik) {
-  const m = Math.floor(detik / 60);
-  const s = detik % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 function updateDisplayWaktu() {

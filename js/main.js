@@ -5,17 +5,7 @@ inisialisasiPapanFisik();
 aturTimer();
 tampilkanAlertUndo();
 
-// 2. Event Listener Sederhana
-cekTimer.addEventListener("change", aturTimer);
-menit.addEventListener("change", function () {
-  if (gameState.gameStatus === "waiting") {
-    waktuDetikPutih = parseInt(menit.value) * 60;
-    waktuDetikHitam = parseInt(menit.value) * 60;
-    updateDisplayWaktu();
-  }
-});
-
-// 3. Event Listener untuk Tombol Copy History
+// 2. Event Listener untuk Tombol Copy History
 if (btnCopy) {
   btnCopy.addEventListener("click", () => {
     const teksHistory = moveHistory.value.trim();
@@ -42,7 +32,7 @@ if (btnCopy) {
   });
 }
 
-// 4. Event Listener Document Ready (Import Modal)
+// 3. Event Listener Document Ready (Import Modal)
 document.addEventListener("DOMContentLoaded", () => {
   const btnImport = document.getElementById("btnImport");
   const teksInputImport = document.getElementById("teksInputImport");
@@ -74,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         eksekusiImportMoveHistory(input);
       }
 
-      cekTimer.checked = false;
       aturTimer();
 
       // Update tombol Start menjadi Resign karena game sekarang aktif

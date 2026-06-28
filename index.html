@@ -6,7 +6,8 @@
     <title>Migoyugo - Strategic Board Game</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet" />
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -19,21 +20,21 @@
         </div>
 
         <div
-          class="area-game d-flex justify-content-center align-items-start gap-3">
+          class="area-game d-flex justify-content-center align-items-start gap-3"
+        >
           <!-- PAPAN GAME -->
           <section class="kotak-game flex-shrink-0 rounded-1 overflow-hidden">
             <div
-              class="bar-pemain d-flex align-items-center justify-content-between px-3 text-white">
+              class="bar-pemain d-flex align-items-center justify-content-between px-3 text-white"
+            >
               <div
                 id="info-putih"
-                class="d-flex align-items-center gap-2 rounded px-1">
+                class="d-flex align-items-center gap-2 rounded px-1"
+              >
                 <div class="bidak putih rounded-circle"></div>
                 <span>White</span>
                 <span>Yugos: 0</span>
               </div>
-
-              <!-- atur nya disini kalau mau hitung mundur -->
-              <div class="waktu-putih fw-bold">10:00</div>
             </div>
 
             <div class="papan position-relative" id="papanGame">
@@ -61,17 +62,16 @@
             </div>
 
             <div
-              class="bar-pemain d-flex align-items-center justify-content-between px-3 text-white">
+              class="bar-pemain d-flex align-items-center justify-content-between px-3 text-white"
+            >
               <div
                 id="info-hitam"
-                class="d-flex align-items-center gap-2 rounded px-1">
+                class="d-flex align-items-center gap-2 rounded px-1"
+              >
                 <div class="bidak hitam rounded-circle"></div>
                 <span>Black</span>
                 <span>Yugos: 0</span>
               </div>
-
-              <!-- aturnya disini kalau mau hitung mundur -->
-              <div class="waktu-hitam fw-bold">10:00</div>
             </div>
           </section>
 
@@ -82,14 +82,16 @@
               <button
                 id="btnStart"
                 class="btn btn-success w-50 py-3 fw-bold fs-6 rounded-top rounded-bottom-0"
-                onclick="startGame()">
+                onclick="startGame()"
+              >
                 Start
               </button>
 
               <!-- nanti buat fungsi reset game -->
               <button
                 class="btn btn-dark w-50 py-3 fw-bold fs-6 rounded-top rounded-bottom-0"
-                onclick="resetPapan()">
+                onclick="resetPapan()"
+              >
                 Reset
               </button>
             </div>
@@ -102,7 +104,8 @@
                   <select
                     id="pilihanMusuh"
                     class="form-select"
-                    onchange="toggleAISettings()">
+                    onchange="toggleAISettings()"
+                  >
                     <option>Local Play</option>
                     <option>Artificial Intelligence</option>
                   </select>
@@ -111,7 +114,8 @@
                 <div
                   class="form-baris mb-3"
                   id="panelFirstMove"
-                  style="display: none">
+                  style="display: none"
+                >
                   <label for="pilihanGiliran">First Move:</label>
                   <select id="pilihanGiliran" class="form-select">
                     <option value="user">User First (White)</option>
@@ -123,7 +127,8 @@
                 <div
                   id="aiSettingsPanel"
                   class="ai-settings-panel"
-                  style="display: none">
+                  style="display: none"
+                >
                   <div class="ai-settings-header">
                     <span>⚙️ AI Settings</span>
                   </div>
@@ -143,8 +148,7 @@
                     </div>
                   </div>
 
-                  <div class="ai-setting-row" style="display: none;"> <label
-                      for="inputDepth">Search Depth:</label>
+                  <div class="ai-setting-row" style="display: none">
                     <div class="depth-control d-flex align-items-center gap-2">
                       <input
                         type="range"
@@ -152,49 +156,11 @@
                         class="form-range depth-slider"
                         min="1"
                         max="5"
-                        value="4" oninput="updateDepthLabel(this.value)" />
-                      <span id="depthLabel" class="depth-label">4</span> </div>
-                  </div>
-                </div>
-
-                <div class="form-baris mb-3" style="display: none;">
-                  <label>Game Timer:</label>
-
-                  <div class="timer-control d-flex align-items-center gap-2">
-                    <span>Off</span>
-
-                    <input type="checkbox" id="cekTimer" disabled />
-
-                    <label for="cekTimer" class="toggle">
-                      <span></span>
-                    </label>
-
-                    <span>On</span>
-                  </div>
-                </div>
-
-                <div class="timer-setting" id="timerSetting">
-                  <div>
-                    <label for="menit"
-                      class="form-label d-block mb-2">Minutes:</label>
-
-                    <select id="menit" class="form-select">
-                      <option value="10">10</option>
-                      <option value="15">15</option>
-                      <option value="20">20</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label for="increment"
-                      class="form-label d-block mb-2">Increment:</label>
-
-                    <select id="increment" class="form-select">
-                      <option value="5">5 sec</option>
-                      <option value="2">2 sec</option>
-                      <option value="1">1 sec</option>
-                      <option value="0">0 sec</option>
-                    </select>
+                        value="4"
+                        oninput="updateDepthLabel(this.value)"
+                      />
+                      <span id="depthLabel" class="depth-label">4</span>
+                    </div>
                   </div>
                 </div>
 
@@ -205,7 +171,8 @@
                       class="btn btn-info text-white py-3 fw-bold rounded d-flex align-items-center justify-content-center"
                       style="background-color: #0fa7bb; border-color: #0fa7bb"
                       data-bs-toggle="modal"
-                      data-bs-target="#importModal">
+                      data-bs-target="#importModal"
+                    >
                       📥 Import Move History / Position
                     </button>
                   </div>
@@ -225,7 +192,8 @@
                       resize: none;
                       outline: none;
                       background-color: #fcfcfc;
-                    "></textarea>
+                    "
+                  ></textarea>
                 </div>
                 <div class="d-flex justify-content-center gap-4">
                   <button type="button" class="btn btn-primary" id="btnCopy">
@@ -246,9 +214,11 @@
     <div class="alert-container">
       <div
         class="alert-copy position-fixed shadow rounded-3 d-flex align-items-center gap-2 p-3"
-        id="alertCopy">
+        id="alertCopy"
+      >
         <div
-          class="alert-icon rounded-circle d-flex align-items-center justify-content-center"></div>
+          class="alert-icon rounded-circle d-flex align-items-center justify-content-center"
+        ></div>
         <div class="alert-text d-flex flex-column gap-1">
           <strong id="alertJudul">Judul Alert</strong>
           <span id="alertPesan">Pesan Alert</span>
@@ -256,8 +226,7 @@
       </div>
     </div>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/constants.js"></script>
 
@@ -274,7 +243,8 @@
       id="resignModal"
       tabindex="-1"
       aria-labelledby="resignModalLabel"
-      aria-hidden="true">
+      aria-hidden="true"
+    >
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center p-3 border-0">
           <div class="modal-body">
@@ -289,14 +259,16 @@
               <button
                 type="button"
                 class="btn btn-danger fs-5 fw-bold"
-                id="btnConfirmResign">
+                id="btnConfirmResign"
+              >
                 🏳️ Yes, Resign
               </button>
 
               <button
                 type="button"
                 class="btn btn-success fs-5 fw-bold"
-                data-bs-dismiss="modal">
+                data-bs-dismiss="modal"
+              >
                 ⚔️ Continue Playing
               </button>
             </div>
@@ -310,7 +282,8 @@
       id="gameOverModal"
       tabindex="-1"
       aria-labelledby="gameOverModalLabel"
-      aria-hidden="true">
+      aria-hidden="true"
+    >
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center p-3 border-0">
           <div class="modal-body">
@@ -322,14 +295,16 @@
               <button
                 type="button"
                 class="btn btn-success fs-5 fw-bold"
-                id="btnReviewGame">
+                id="btnReviewGame"
+              >
                 📋 Review Game
               </button>
 
               <button
                 type="button"
                 class="btn btn-dark fs-5 fw-bold"
-                data-bs-dismiss="modal">
+                data-bs-dismiss="modal"
+              >
                 Close
               </button>
             </div>
@@ -343,7 +318,8 @@
       id="importModal"
       tabindex="-1"
       aria-labelledby="importLabel"
-      aria-hidden="true">
+      aria-hidden="true"
+    >
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content text-center p-3 border-0">
           <div class="modal-body">
@@ -358,7 +334,8 @@
 
             <div
               class="bg-light p-3 rounded-3 text-start mb-4 mx-3"
-              style="font-size: 14px; font-family: monospace; color: #333">
+              style="font-size: 14px; font-family: monospace; color: #333"
+            >
               <div class="text-center fw-bold mb-2">Move History Format:</div>
               <div class="ps-5 mb-3 text-center">
                 1. a1 &nbsp;&nbsp;&nbsp;&nbsp; b2<br />
@@ -384,14 +361,16 @@
                   font-family: monospace;
                   font-size: 14px;
                   background-color: #ffffff;
-                "></textarea>
+                "
+              ></textarea>
             </div>
 
             <div class="d-flex justify-content-end gap-4">
               <button
                 type="button"
                 class="btn btn-dark fs-5 fw-bold"
-                data-bs-dismiss="modal">
+                data-bs-dismiss="modal"
+              >
                 Cancel
               </button>
 
@@ -399,7 +378,8 @@
                 type="button"
                 class="btn btn-success fs-5 fw-bold"
                 data-bs-dismiss="modal"
-                id="btnImport">
+                id="btnImport"
+              >
                 Import
               </button>
             </div>

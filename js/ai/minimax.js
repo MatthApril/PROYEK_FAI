@@ -25,7 +25,7 @@ function jalankanAI() {
       return;
     }
 
-    // PRIORITAS 1 & 2: Short-circuiting untuk Igo Langsung (Sudah Benar)
+    // PRIORITAS 1 & 2: Short-circuiting untuk Igo Langsung
     const igoLangsungAI = cariLangkahIgoLangsung(gameState.board, aiColor);
     if (igoLangsungAI) {
       aiSedangBerpikir = false;
@@ -409,7 +409,7 @@ function minimaxMurni(board, depth, isMaximizing) {
   }
 }
 
-// fungsi untuk clone board agar simulasi tidak merusak board asli , jadi di rencanaain dlu pake cloneboard
+// fungsi untuk clone board agar simulasi tidak merusak board asli , jadi di rencanain dlu pake cloneboard
 function cloneBoardFast(board) {
   const newBoard = new Array(8);
   for (let r = 0; r < 8; r++) {
@@ -512,7 +512,7 @@ function cariLangkahIgoLangsung(board, color) {
   return null;
 }
 
-// fungsi untuk cek apakah langkah simulasi membentuk Yugo, ini mirip dengan cekYugo di script.js tapi ini khusus untuk simulasi di minmax, jadi tidak merubah state asli, dan juga mengembalikan informasi tambahan tentang arah Yugo dan migos yang terhapus, karena nanti itu bisa dipakai untuk evaluasi board di minimax
+// fungsi untuk cek apakah langkah simulasi membentuk Yugo, ini khusus untuk simulasi di minmax, jadi tidak merubah state asli, dan juga mengembalikan informasi tambahan tentang arah Yugo dan migos yang terhapus, karena nanti itu bisa dipakai untuk evaluasi board di minimax
 function cekYugoSimulasi(board, row, col, color) {
   const arah = [
     [

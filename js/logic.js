@@ -86,21 +86,19 @@ function handleKlikKotak(row, col, dariAI = false) {
     return;
   }
 
-  // 6. PERALIHAN TURN & TIMER INCREMENT
+  // 6. PERALIHAN TURN
 
   if (gameState.currentPlayer === "white") {
-    if (cekTimer.checked) waktuDetikPutih += nilaiIncrement;
     gameState.currentPlayer = "black";
     infoPutih.classList.remove("bg-success");
     infoHitam.classList.add("bg-success");
   } else {
-    if (cekTimer.checked) waktuDetikHitam += nilaiIncrement;
     gameState.currentPlayer = "white";
     infoHitam.classList.remove("bg-success");
     infoPutih.classList.add("bg-success");
   }
 
-  // 5. UPDATE TAMPILAN LAYAR
+  // 7. UPDATE TAMPILAN LAYAR
   updateDisplayWaktu();
   renderBoard();
 
@@ -109,7 +107,7 @@ function handleKlikKotak(row, col, dariAI = false) {
     return; // Stop eksekusi jika game sudah berakhir secara Wego
   }
 
-  // 7. JALANKAN LOGIKA AI - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
+  // 8. JALANKAN LOGIKA AI - Posisikan di akhir handleKlikKotak agar AI berjalan setelah semua update layar selesai
   if (
     modeLawan !== "Local Play" &&
     gameState.gameStatus === "active" &&
@@ -531,18 +529,6 @@ function startGame() {
   btnGame.classList.remove("btn-success");
   btnGame.classList.add("btn-dark");
 
-  if (cekTimer.checked) {
-    const menitPilihan = parseInt(menit.value);
-    nilaiIncrement = parseInt(increment.value);
-
-    waktuDetikPutih = menitPilihan * 60;
-    waktuDetikHitam = menitPilihan * 60;
-
-    infoPutih.classList.add("bg-success");
-    updateDisplayWaktu();
-    mulaiIntervalTimer();
-  }
-
   if (modeLawan === "Artificial Intelligence" && aiColor === "white") {
     setTimeout(() => {
       jalankanAI();
@@ -550,7 +536,6 @@ function startGame() {
   }
 }
 function akhiriGame(pesan) {
-  clearInterval(timerIntervalId);
   gameState.gameStatus = "finished";
 
   // 1. Ganti teks deskripsi di dalam modal sesuai kondisi kemenangan
@@ -618,17 +603,6 @@ function resetPapan() {
   igoWinningKotak = []; // Kosongkan daftar petak kuning Igo
   historyStack = [];
 
-  clearInterval(timerIntervalId);
-  timerIntervalId = null;
-
-  clearTimeout(aiTimeoutId);
-  aiTimeoutId = null;
-  aiSedangBerpikir = false;
-
-  const menitPilihan = parseInt(menit.value);
-  waktuDetikPutih = menitPilihan * 60;
-  waktuDetikHitam = menitPilihan * 60;
-
   infoPutih.classList.remove("bg-success");
   infoHitam.classList.remove("bg-success");
   moveHistory.value = "";
@@ -650,38 +624,14 @@ function resetPapan() {
 
   // Render ulang papan yang kosong
   renderBoard();
-  updateDisplayWaktu();
 }
+
 function aturTimer() {
-  if (cekTimer.checked) {
-    waktuPutih.forEach((w) => (w.style.display = "block"));
-    waktuHitam.forEach((w) => (w.style.display = "block"));
-    timerSetting.style.display = "grid";
-  } else {
-    waktuPutih.forEach((w) => (w.style.display = "none"));
-    waktuHitam.forEach((w) => (w.style.display = "none"));
-    timerSetting.style.display = "none";
-  }
+  waktuPutih.forEach((w) => (w.style.display = "none"));
+  waktuHitam.forEach((w) => (w.style.display = "none"));
+  timerSetting.style.display = "none";
 }
-function mulaiIntervalTimer() {
-  clearInterval(timerIntervalId);
-  timerIntervalId = setInterval(function () {
-    if (gameState.currentPlayer === "white") {
-      waktuDetikPutih--;
-      if (waktuDetikPutih <= 0) {
-        akhiriGame("Waktu Putih habis! Hitam Menang.");
-        resetPapan();
-      }
-    } else {
-      waktuDetikHitam--;
-      if (waktuDetikHitam <= 0) {
-        akhiriGame("Waktu Hitam habis! Putih Menang.");
-        resetPapan();
-      }
-    }
-    updateDisplayWaktu();
-  }, 1000);
-}
+
 // Pembantu konversi dari kode notasi catur (a1-h8) ke koordinat indeks matriks array [0-7][0-7]
 function konversiNotasiKeMatriks(notasi) {
   if (notasi.length < 2) return null;

@@ -366,10 +366,6 @@ function undo() {
   // Switch panel kembali memunculkan Move History
   switchPanels();
 
-  if (cekTimer.checked) {
-    mulaiIntervalTimer();
-  }
-
   // 3. Jika langkah yang di-undo menghasilkan Yugo, kurangi skor dan kembalikan Migo yang meledak
   if (langkahTerakhir.isYugo) {
     gameState.scores[warnaTerakhir] -= langkahTerakhir.jumlahArahYugo;
@@ -624,12 +620,6 @@ function resetPapan() {
 
   // Render ulang papan yang kosong
   renderBoard();
-}
-
-function aturTimer() {
-  waktuPutih.forEach((w) => (w.style.display = "none"));
-  waktuHitam.forEach((w) => (w.style.display = "none"));
-  timerSetting.style.display = "none";
 }
 
 // Pembantu konversi dari kode notasi catur (a1-h8) ke koordinat indeks matriks array [0-7][0-7]

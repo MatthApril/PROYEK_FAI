@@ -233,7 +233,6 @@ function hitungTotalBidak(board) {
   return count;
 }
 
-// fungsi untuk nilai kontrol tengah, ini untuk evaluasi board di mode Novice, jadi semakin dekat ke tengah semakin tinggi nilainya, karena menguasai tengah itu strategi yang bagus di Yugo
 function nilaiKontrolTengah(row, col) {
   const centerRow = 3.5;
   const centerCol = 3.5;
@@ -243,7 +242,6 @@ function nilaiKontrolTengah(row, col) {
   return 14 - jarak * 2;
 }
 
-// Tambahkan satu fungsi pembantu kecil ini tepat di bawah fungsi evaluasiBoard Anda:
 function unconAncamanHuman(nilai) {
   return parseInt(nilai) || 0;
 }

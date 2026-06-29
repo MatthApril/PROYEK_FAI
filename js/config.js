@@ -12,17 +12,13 @@ let gameState = {
   gameStatus: "waiting", // 'waiting' | 'active' | 'finished'
 };
 
-// 3. State Timer
-let waktuDetikPutih;
-let waktuDetikHitam;
-
-// 4. State History & Papan
+// 3. State History & Papan
 let nomorLangkah = 1;
 let lastMove = null;
 let igoWinningKotak = [];
 let historyStack = [];
 
-// 5. State Mode Lawan (AI)
+// 4. State Mode Lawan (AI)
 let modeLawan = "Local Play";
 let aiColor = "black";
 let humanColor = "white";

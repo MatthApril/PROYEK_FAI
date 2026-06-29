@@ -2,7 +2,6 @@
 
 // 1. Eksekusi Pertama Saat Website Dibuka
 inisialisasiPapanFisik();
-aturTimer();
 tampilkanAlertUndo();
 
 // 2. Event Listener untuk Tombol Copy History
@@ -63,8 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Jika tidak, diasumsikan sebagai urutan baris Move History (Notasi Catur)
         eksekusiImportMoveHistory(input);
       }
-
-      aturTimer();
 
       // Update tombol Start menjadi Resign karena game sekarang aktif
       btnGame.textContent = "Resign";

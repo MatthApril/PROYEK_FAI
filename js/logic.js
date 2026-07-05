@@ -511,8 +511,10 @@ function startGame() {
   if (modeLawan === "Artificial Intelligence") {
     if (pilihanGiliran.value === "ai") {
       aiColor = "white"; // AI jalan duluan (White)
+      humanColor = "black";
     } else {
       aiColor = "black"; // User jalan duluan (White), AI menjadi Black
+      humanColor = "white";
     }
   }
 
@@ -693,7 +695,6 @@ function eksekusiImportPositionString(str) {
       }
     });
 
-    // Sesuaikan panel indikator giliran aktif sesuai data START
     if (gameState.currentPlayer === "white") {
       infoHitam.classList.remove("bg-success");
       infoPutih.classList.add("bg-success");
@@ -734,30 +735,26 @@ function eksekusiImportPositionString(str) {
     );
   }
 }
-// FORMAT 2: Eksekusi Pemuatan Langkah demi Langkah Menggunakan Tumpukan Riwayat (Move History)
+
 function eksekusiImportMoveHistory(str) {
   try {
     gameState.gameStatus = "active";
 
-    // Memisahkan teks input berdasarkan baris atau spasi kosong
     const token = str.split(/\s+/);
     let barisLangkahTeks = "";
     let jumlahLangkahSukses = 0;
 
     for (let i = 0; i < token.length; i++) {
       const item = token[i].trim();
-      if (!item || item.match(/^\d+\.$/)) continue; // Lewati token penunjuk angka (misal: "1.", "2.")
+      if (!item || item.match(/^\d+\.$/)) continue;
 
-      // 1. Hitung jumlah bintang sebelum karakternya dibersihkan
       const jumlahBintang = (item.match(/\*/g) || []).length;
       const apakahHarusYugo = jumlahBintang > 0;
 
-      // Bersihkan karakter notasi bintang untuk mendapatkan murni koordinat petak tujuan
       const petakNotasi = item.replace(/\*/g, "");
       const pos = konversiNotasiKeMatriks(petakNotasi);
 
       if (pos) {
-        // Simulasikan penempatan bidak asli ke atas papan virtual game
         gameState.board[pos.row][pos.col] = {
           color: gameState.currentPlayer,
           isYugo: false,
@@ -765,28 +762,24 @@ function eksekusiImportMoveHistory(str) {
           migosTerhapus: [],
         };
 
-        // Evaluasi apakah penempatan memicu ledakan Yugo
         const totalArah = yugo(pos.row, pos.col, gameState.currentPlayer);
 
         if (totalArah === -1) {
           gameState.board[pos.row][pos.col] = null;
-          continue; // Lewati jika langkah terdeteksi ilegal (long lines)
+          continue;
         }
 
         // === OVERRIDE FORCE STATE JIKA NOTASI MENGANDUNG BINTANG (*) ===
         if (apakahHarusYugo) {
-          // Jika di langkah alami belum menjadi Yugo atau jumlah arahnya berbeda, paksa sesuai data Impor
           if (!gameState.board[pos.row][pos.col].isYugo) {
             gameState.board[pos.row][pos.col].isYugo = true;
             gameState.board[pos.row][pos.col].jumlahArahYugo = jumlahBintang;
             gameState.board[pos.row][pos.col].jenisYugo =
               dapatkanTipeYugoBerdasarkanArah(jumlahBintang);
 
-            // Tambahkan ke statistik fisik dan skor background
             gameState.yugo[gameState.currentPlayer] += 1;
             gameState.scores[gameState.currentPlayer] += jumlahBintang;
           } else {
-            // Jika secara alami sudah terdeteksi Yugo, pastikan jumlah arahnya sinkron dengan jumlah bintang
             const selisihSkor =
               jumlahBintang - gameState.board[pos.row][pos.col].jumlahArahYugo;
             gameState.scores[gameState.currentPlayer] += selisihSkor;
@@ -799,7 +792,6 @@ function eksekusiImportMoveHistory(str) {
         lastMove = { row: pos.row, col: pos.col };
         jumlahLangkahSukses++;
 
-        // Simpan data state langkah ke dalam historyStack pendukung Undo/Review
         const cellSelesai = gameState.board[pos.row][pos.col];
         historyStack.push({
           row: pos.row,
@@ -813,7 +805,6 @@ function eksekusiImportMoveHistory(str) {
               : [],
         });
 
-        // Rekonstruksi string tulisan di Textarea Move History Panel Kanan
         if (gameState.currentPlayer === "white") {
           barisLangkahTeks += `${nomorLangkah}. ${item}   `;
           gameState.currentPlayer = "black";
@@ -825,7 +816,6 @@ function eksekusiImportMoveHistory(str) {
       }
     }
 
-    // Masukkan rentetan notasi langkah yang sukses divalidasi ke panel history samping
     moveHistory.value = barisLangkahTeks;
     moveHistory.scrollTop = moveHistory.scrollHeight;
 
@@ -942,11 +932,9 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
       }
     });
 
-    // 1. Cek apakah membentuk Yugo yang sah (tepat 4)
     if (hitungBidak === 4) {
       adaYugoSah = true;
     }
-    // 2. Cek apakah membentuk Long Line (>4)
     else if (hitungBidak > 4) {
       adaLongLine = true;
       // console.log(
@@ -954,14 +942,11 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
       // );
     }
 
-    // 3. Batasan keamanan: Mencegah penumpukan di jalur yang sudah ada 4 Yugo
     if (hitungYugoLama >= 4) {
       return false;
     }
   }
 
-  // 4. KEPUTUSAN FINAL (Tereksekusi SETELAH semua arah dicek)
-  // Aturan Migoyugo: Jika membuat Long Line (>4) TAPI tidak ada Yugo (4) di arah silang = ILEGAL
   if (adaLongLine && !adaYugoSah) {
     return false;
   }

@@ -4,16 +4,35 @@ let totalNodeDievaluasi = 0;
 // CACHE EVALUASI: Menyimpan hasil evaluasi board yang sudah pernah dihitung agar tidak dihitung ulang
 const evaluasiCache = new Map();
 
+function apakahLangkahLegalSimulasi(board, row, col, color) {
+  if (row < 0 || row > 7 || col < 0 || col > 7) return false;
+  if (board[row][col] !== null) return false;
+  return true;
+}
+
+function ambilLangkahLegalSimulasi(board, color) {
+  let legal = [];
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (apakahLangkahLegalSimulasi(board, r, c, color)) {
+        legal.push({ row: r, col: c });
+      }
+    }
+  }
+  return legal;
+}
+
 function jalankanAI() {
+  console.log("AI is thinking...");
   aiSedangBerpikir = true;
 
   const elemenToggle = document.getElementById("toggleAlphaBeta");
   const elemenDepth = document.getElementById("inputDepth");
   const gunakanAlphaBeta = elemenToggle ? elemenToggle.checked : true;
-  let depth = elemenDepth ? parseInt(elemenDepth.value) : 2;
+  let depth = elemenDepth ? parseInt(elemenDepth.value) : 4;
 
   aiTimeoutId = setTimeout(() => {
-    const langkahLegal = ambilSemuaLangkahLegalUntukBoard(
+    const langkahLegal = ambilLangkahLegalSimulasi(
       gameState.board,
       aiColor,
     );
@@ -25,31 +44,33 @@ function jalankanAI() {
       return;
     }
 
-    // PRIORITAS 1 & 2: Short-circuiting untuk Igo Langsung
-    const igoLangsungAI = cariLangkahIgoLangsung(gameState.board, aiColor);
-    if (igoLangsungAI) {
-      aiSedangBerpikir = false;
-      handleKlikKotak(igoLangsungAI.row, igoLangsungAI.col, true);
-      return;
-    }
+    // // PRIORITAS 1 & 2: Short-circuiting untuk Igo Langsung
+    // const igoLangsungAI = cariLangkahIgoLangsung(gameState.board, aiColor);
+    // if (igoLangsungAI) {
+    //   aiSedangBerpikir = false;
+    //   handleKlikKotak(igoLangsungAI.row, igoLangsungAI.col, true);
+    //   return;
+    // }
 
-    const igoLangsungHuman = cariLangkahIgoLangsung(
-      gameState.board,
-      humanColor,
-    );
-    if (
-      igoLangsungHuman &&
-      apakahLangkahLegalUntukBoard(
-        gameState.board,
-        igoLangsungHuman.row,
-        igoLangsungHuman.col,
-        aiColor,
-      )
-    ) {
-      aiSedangBerpikir = false;
-      handleKlikKotak(igoLangsungHuman.row, igoLangsungHuman.col, true);
-      return;
-    }
+    // const igoLangsungHuman = cariLangkahIgoLangsung(
+    //   gameState.board,
+    //   humanColor,
+    // );
+    // if (
+    //   igoLangsungHuman &&
+    //   apakahLangkahLegalUntukBoard(
+    //     gameState.board,
+    //     igoLangsungHuman.row,
+    //     igoLangsungHuman.col,
+    //     aiColor,
+    //   )
+    // ) {
+    //   aiSedangBerpikir = false;
+      
+    //   console.log("not working")
+    //   handleKlikKotak(igoLangsungHuman.row, igoLangsungHuman.col, true);
+    //   return;
+    // }
 
     let langkahTerbaik = null;
     let skorTerbaik = -Infinity;
@@ -63,13 +84,11 @@ function jalankanAI() {
     // === OPTIMASI MOVE ORDERING LEVEL UTAMA ===
     urutkanLangkah(gameState.board, langkahLegal, aiColor);
 
-    // Gunakan kloning papan hanya sekali di tingkat teratas (Root) untuk keamanan data utama game
     const boardPencarian = cloneBoardFast(gameState.board);
 
     for (let i = 0; i < langkahLegal.length; i++) {
       const langkah = langkahLegal[i];
 
-      // Simpan state asli petak sebelum dimodifikasi untuk keperluan rollback
       const backupCell = boardPencarian[langkah.row][langkah.col];
       const dataYugo = jalankanLangkahInPlace(
         boardPencarian,
@@ -80,7 +99,7 @@ function jalankanAI() {
 
       if (dataYugo.ilegal) {
         boardPencarian[langkah.row][langkah.col] = backupCell;
-        langkah.skorAkhir = -Infinity; // Beri penalti ekstrem jika ilegal
+        langkah.skorAkhir = -Infinity;
         continue;
       }
 
@@ -92,10 +111,8 @@ function jalankanAI() {
         skor = minimaxMurni(boardPencarian, depth - 1, false);
       }
 
-      // Simpan skor akhir ke properti objek langkah saat ini
       langkah.skorAkhir = skor;
 
-      // Rollback status papan kembali ke posisi semula (Backtrack)
       kembalikanLangkahInPlace(
         boardPencarian,
         langkah.row,
@@ -105,7 +122,6 @@ function jalankanAI() {
         aiColor,
       );
 
-      // Tie-breaker: Jika skor sama, pilih yang paling menguasai tengah
       if (skor > skorTerbaik) {
         skorTerbaik = skor;
         langkahTerbaik = langkah;
@@ -134,9 +150,7 @@ function jalankanAI() {
 
     for (let i = 0; i < limitTop; i++) {
       const l = daftarTopLangkah[i];
-      // Konversi indeks baris array [0-7] menjadi baris catur [8-1]
       const namaBaris = 8 - l.row;
-      // Konversi indeks kolom array [0-7] menjadi huruf catur [a-h] menggunakan array global indeksKeHuruf
       const namaKolom = indeksKeHuruf[l.col];
 
       stringTop3 += `Top ${i + 1}: ${namaKolom}${namaBaris} (${l.skorAkhir})`;
@@ -179,7 +193,7 @@ function minimaxAlphaBeta(board, depth, alpha, beta, isMaximizing) {
   }
 
   const colorSekarang = isMaximizing ? aiColor : humanColor;
-  const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, colorSekarang);
+  const langkahLegal = ambilLangkahLegalSimulasi(board, colorSekarang);
   if (langkahLegal.length === 0) return evaluasiBoard(board);
 
   // Panggil fungsi Move Ordering berkinerja tinggi
@@ -260,7 +274,7 @@ function dapatkanPapanKeyString(board) {
 
 // === FUNGSI LOGIKA MEKANIK IN-PLACE MODIFICATION ===
 function jalankanLangkahInPlace(board, row, col, color) {
-  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
+  if (!apakahLangkahLegalSimulasi(board, row, col, color)) {
     return { ilegal: true };
   }
 
@@ -342,18 +356,16 @@ function urutkanLangkah(board, langkahLegal, colorSekarang) {
       bobot += 5000;
     }
 
-    // Prioritas Menengah: Beri nilai berbasis posisi struktur koordinat tengah (Ring System)
     bobot += nilaiKontrolTengah(langkah.row, langkah.col) * 10;
 
     langkah.bobotEvaluasi = bobot;
   }
 
-  // Pengurutan Descending cepat menggunakan properti primitif yang sudah dihitung sebelumnya
   langkahLegal.sort((a, b) => b.bobotEvaluasi - a.bobotEvaluasi);
 }
 
 function minimaxMurni(board, depth, isMaximizing) {
-  totalNodeDievaluasi++; // Menghitung setiap node yang dikunjungi
+  totalNodeDievaluasi++;
 
   if (deteksiIgo(board, aiColor)) return HEURISTIC_WEIGHTS.WIN_IGO + depth;
   if (deteksiIgo(board, humanColor)) return HEURISTIC_WEIGHTS.LOSE_IGO - depth;
@@ -363,7 +375,7 @@ function minimaxMurni(board, depth, isMaximizing) {
   }
 
   const colorSekarang = isMaximizing ? aiColor : humanColor;
-  const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, colorSekarang);
+  const langkahLegal = ambilLangkahLegalSimulasi(board, colorSekarang);
 
   if (langkahLegal.length === 0) {
     return evaluasiBoard(board);
@@ -409,7 +421,6 @@ function minimaxMurni(board, depth, isMaximizing) {
   }
 }
 
-// fungsi untuk clone board agar simulasi tidak merusak board asli , jadi di rencanain dlu pake cloneboard
 function cloneBoardFast(board) {
   const newBoard = new Array(8);
   for (let r = 0; r < 8; r++) {
@@ -432,14 +443,12 @@ function cloneBoardFast(board) {
   return newBoard;
 }
 
-// Mempertahankan fungsi cloneBoard asli sebagai fallback jika dibutuhkan modul script lain
 function cloneBoard(board) {
   return cloneBoardFast(board);
 }
 
-// fungsi untuk menjalankan langkah simulasi di board clone, jadi setiap langkah yang dicek di minmax itu dijalankan dulu di board clone, baru dicek hasilnya, jadi tidak merusak board asli
 function jalankanLangkahSimulasi(board, row, col, color) {
-  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
+  if (!apakahLangkahLegalSimulasi(board, row, col, color)) {
     // board[row][col] = null;
     return false; // Keluar dari fungsi, simulasi langkah digagalkan
   }
@@ -481,7 +490,7 @@ function jalankanLangkahSimulasi(board, row, col, color) {
 
 // fungsi tambahan
 function cariLangkahIgoLangsung(board, color) {
-  const langkahLegal = ambilSemuaLangkahLegalUntukBoard(board, color);
+  const langkahLegal = ambilLangkahLegalSimulasi(board, color);
   const kandidat = [];
   const totalLangkah = langkahLegal.length;
 

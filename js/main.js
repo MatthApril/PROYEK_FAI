@@ -35,6 +35,9 @@ if (btnCopy) {
 document.addEventListener("DOMContentLoaded", () => {
   const btnImport = document.getElementById("btnImport");
   const teksInputImport = document.getElementById("teksInputImport");
+  
+  // Ambil elemen UI yang menentukan siapa yang jalan duluan
+  const elemenGiliran = document.getElementById("pilihanGiliran"); 
 
   if (btnImport) {
     btnImport.addEventListener("click", () => {
@@ -48,6 +51,20 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         return;
       }
+
+      // === LOGIKA PENENTUAN WARNA SEBELUM IMPORT ===
+      // Cek ID 'pilihanGiliran' untuk menentukan siapa White
+      let playerPertama = elemenGiliran ? elemenGiliran.value : "user";
+
+      if (playerPertama === "ai") {
+        aiColor = "white";
+        humanColor = "black";
+      } else {
+        // Jika value "user" (atau fallback)
+        aiColor = "black";
+        humanColor = "white";
+      }
+      // =============================================
 
       // Bersihkan papan terlebih dahulu sebelum melakukan rekonstruksi data
       resetPapan();
@@ -82,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (
         modeLawan !== "Local Play" &&
         gameState.gameStatus === "active" &&
-        gameState.currentPlayer === aiColor
+        gameState.currentPlayer === window.aiColor
       ) {
         jalankanAI();
       }

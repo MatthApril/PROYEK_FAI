@@ -90,7 +90,6 @@ function evaluasiBoard(board) {
 // HELPER 1: DETEKSI ANCAMAN IGO & DPA (Mencari 3 Yugo + 1 Kosong)
 function deteksiAncamanIgo(board, color) {
   let jumlahAncaman = 0;
-  // 4 Arah: Horizontal, Vertikal, Diagonal Kanan Bawah, Diagonal Kiri Bawah
   const arah = [
     [0, 1],
     [1, 0],

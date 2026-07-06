@@ -4,24 +4,6 @@ let totalNodeDievaluasi = 0;
 // CACHE EVALUASI: Menyimpan hasil evaluasi board yang sudah pernah dihitung agar tidak dihitung ulang
 const evaluasiCache = new Map();
 
-function apakahLangkahLegalSimulasi(board, row, col, color) {
-  if (row < 0 || row > 7 || col < 0 || col > 7) return false;
-  if (board[row][col] !== null) return false;
-  return true;
-}
-
-function ambilLangkahLegalSimulasi(board, color) {
-  let legal = [];
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      if (apakahLangkahLegalSimulasi(board, r, c, color)) {
-        legal.push({ row: r, col: c });
-      }
-    }
-  }
-  return legal;
-}
-
 function jalankanAI() {
   console.log("AI is thinking...");
   aiSedangBerpikir = true;
@@ -32,10 +14,7 @@ function jalankanAI() {
   let depth = elemenDepth ? parseInt(elemenDepth.value) : 4;
 
   aiTimeoutId = setTimeout(() => {
-    const langkahLegal = ambilLangkahLegalSimulasi(
-      gameState.board,
-      aiColor,
-    );
+    const langkahLegal = ambilLangkahLegalSimulasi(gameState.board, aiColor);
 
     if (langkahLegal.length === 0) {
       akhiriGame("AI tidak memiliki langkah legal. White wins!");
@@ -66,7 +45,7 @@ function jalankanAI() {
     //   )
     // ) {
     //   aiSedangBerpikir = false;
-      
+
     //   console.log("not working")
     //   handleKlikKotak(igoLangsungHuman.row, igoLangsungHuman.col, true);
     //   return;
@@ -274,7 +253,7 @@ function dapatkanPapanKeyString(board) {
 
 // === FUNGSI LOGIKA MEKANIK IN-PLACE MODIFICATION ===
 function jalankanLangkahInPlace(board, row, col, color) {
-  if (!apakahLangkahLegalSimulasi(board, row, col, color)) {
+  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
     return { ilegal: true };
   }
 
@@ -448,7 +427,7 @@ function cloneBoard(board) {
 }
 
 function jalankanLangkahSimulasi(board, row, col, color) {
-  if (!apakahLangkahLegalSimulasi(board, row, col, color)) {
+  if (!apakahLangkahLegalUntukBoard(board, row, col, color)) {
     // board[row][col] = null;
     return false; // Keluar dari fungsi, simulasi langkah digagalkan
   }

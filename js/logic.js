@@ -851,6 +851,19 @@ function eksekusiImportMoveHistory(str) {
   }
 }
 
+function ambilLangkahLegalSimulasi(board, color) {
+  let legal = [];
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      // PERBAIKAN: Gunakan fungsi validasi aturan asli dari logic.js
+      if (apakahLangkahLegalUntukBoard(board, r, c, color)) {
+        legal.push({ row: r, col: c });
+      }
+    }
+  }
+  return legal;
+}
+
 // ==========================================
 // ATURAN LEGALITAS & PENGECEKAN LANGKAH (Masukkan ke js/logic.js)
 // ==========================================
@@ -902,7 +915,7 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
   ];
 
   let adaYugoSah = false;
-  let adaLongLine = false;
+  // let adaLongLine = false;
 
   for (const pasangArah of arah) {
     let hitungBidak = 1;
@@ -935,11 +948,14 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
     if (hitungBidak === 4) {
       adaYugoSah = true;
     }
-    else if (hitungBidak > 4) {
-      adaLongLine = true;
+
+    if (hitungBidak > 4) {
+      // adaLongLine = true;
       // console.log(
       //   `Langkah ilegal: Membentuk Long Line (${hitungBidak}) di (${row}, ${col})`,
       // );
+
+      return false;
     }
 
     if (hitungYugoLama >= 4) {
@@ -947,9 +963,9 @@ function apakahLangkahLegalUntukBoard(board, row, col, color) {
     }
   }
 
-  if (adaLongLine && !adaYugoSah) {
-    return false;
-  }
+  // if (adaLongLine && !adaYugoSah) {
+  //   return false;
+  // }
 
   return true;
 }
